@@ -88,9 +88,10 @@ public final class BasicServer {
 
 ## Client Examples
 
-#### Java Client
+{% stepper %}
+{% step %}
+### Java Client
 
-{% code title="Client.java" %}
 ```java
 //package com.socketio4j.examples.core;
 
@@ -121,17 +122,18 @@ public final class BasicClient {
 
         socket.emit("message", "Hello from socketio4j!");
 
-        Thread.sleep(3000);
+        Thread.sleep(30000);
         socket.disconnect();
     }
 }
 
 ```
-{% endcode %}
+{% endstep %}
 
+{% step %}
 #### Javascript (Browser)
 
-{% code title="client.html" %}
+{% code title="client.java" %}
 ```html
 <!DOCTYPE html>
 <html>
@@ -156,5 +158,8 @@ public final class BasicClient {
 </body>
 </html>
 
+
 ```
 {% endcode %}
+{% endstep %}
+{% endstepper %}
