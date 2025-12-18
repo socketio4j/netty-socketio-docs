@@ -154,6 +154,26 @@ public final class BasicServer {
 {% endcode %}
 {% endtab %}
 
+{% tab title="Node.js" %}
+```javascript
+import { io } from "socket.io-client";
+
+const socket = io("http://localhost:9092", {
+  query: { room: "room1" }
+});
+
+socket.on("connect", () => {
+  console.log("Connected:", socket.id);
+  socket.emit("message", "Hello from Node.js");
+});
+
+socket.on("message", (data) => {
+  console.log("Received:", data);
+});
+
+```
+{% endtab %}
+
 {% tab title="Html" %}
 {% code title="client.html" %}
 ```html
@@ -182,25 +202,5 @@ public final class BasicServer {
 
 ```
 {% endcode %}
-{% endtab %}
-
-{% tab title="Node.js" %}
-```
-import { io } from "socket.io-client";
-
-const socket = io("http://localhost:9092", {
-  query: { room: "room1" }
-});
-
-socket.on("connect", () => {
-  console.log("Connected:", socket.id);
-  socket.emit("message", "Hello from Node.js");
-});
-
-socket.on("message", (data) => {
-  console.log("Received:", data);
-});
-
-```
 {% endtab %}
 {% endtabs %}
