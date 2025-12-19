@@ -3,7 +3,7 @@
 ## Getting Started
 
 * [Server Configuration](README.md)
-* [Server Start](getting-started/server-start.md)
+* [Server Instance](getting-started/server-instance.md)
 
 ## Server Examples
 
