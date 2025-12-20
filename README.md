@@ -1,16 +1,10 @@
 ---
 icon: gear
-metaLinks:
-  alternates:
-    - >-
-      /broken/spaces/gDAhA63iEtgGxfDWw39u/pages/a3d4a313d024711be52a651b91f02830e3ffa24d
 ---
 
 # Server Configuration
 
-{% stepper %}
-{% step %}
-### Network & Binding
+## Network & Binding
 
 | Property   | Type     | Default      | Description                                        |
 | ---------- | -------- | ------------ | -------------------------------------------------- |
@@ -24,10 +18,8 @@ config.setHostname("0.0.0.0");
 config.setPort(9092);
 config.setContext("/socket.io");
 ```
-{% endstep %}
 
-{% step %}
-### Threading Model
+## Threading Model
 
 | Property        | Type  | Default | Notes                          |
 | --------------- | ----- | ------- | ------------------------------ |
@@ -38,10 +30,15 @@ config.setContext("/socket.io");
 config.setBossThreads(2);
 config.setWorkerThreads(16);
 ```
-{% endstep %}
 
-{% step %}
-### Transport Configuration
+{% hint style="info" %}
+**Boss vs Worker threads**\
+Boss threads accept connections; worker threads handle all I/O.\
+Add boss threads **only** to increase **connection accept rate**; use **1 for most cases**.\
+Scale worker threads for throughput—too many cause context switching.
+{% endhint %}
+
+## Transport Configuration
 
 | Property         | Type              | Default              | Description                                            |
 | ---------------- | ----------------- | -------------------- | ------------------------------------------------------ |
@@ -53,10 +50,14 @@ config.setWorkerThreads(16);
 config.setTransports(Transport.WEBSOCKET);
 config.setTransportType(TransportType.EPOLL);
 ```
-{% endstep %}
 
-{% step %}
-### Heartbeat & Timeouts
+{% hint style="info" %}
+**In AUTO transport mode,** socketio4j automatically selects the best available transport at startup in the following order: **IO\_URING → EPOLL → KQUEUE → NIO**.
+
+If the selected transport is not available on the current platform, socketio4j **safely falls back to NIO** without failing startup.
+{% endhint %}
+
+## Heartbeat & Timeouts
 
 | Property           | Default    | Description                     |
 | ------------------ | ---------- | ------------------------------- |
@@ -64,15 +65,29 @@ config.setTransportType(TransportType.EPOLL);
 | `pingTimeout`      | `60000 ms` | Ping timeout (`0` disables)     |
 | `firstDataTimeout` | `5000 ms`  | Prevents silent channel attacks |
 
+> ℹ️ **Ping interval vs ping timeout**\
+> &#xNAN;**`pingInterval`** defines how often the server sends heartbeat pings to keep the connection alive (NAT keep-alive).\
+> &#xNAN;**`pingTimeout`** defines how long the server waits **without a pong** before considering the client disconnected.
+>
+> In short:\
+> **interval = how often to check**,\
+> **timeout = how long to wait before giving up**.
+
 ```java
 config.setPingInterval(20000);
 config.setPingTimeout(60000);
 config.setFirstDataTimeout(5000);
 ```
-{% endstep %}
 
-{% step %}
-### Payload & Frame Limits
+{% hint style="info" %}
+**NAT timeout & keep-alive hint**\
+`pingInterval` must be **shorter than typical NAT idle timeouts** (usually 30–60s) to keep connections alive behind routers and mobile networks.
+
+Lower values improve NAT survivability and faster dead-peer detection, but **increase network and CPU overhead**.\
+Higher values reduce overhead, but risk **silent disconnects** on NATs and load balancers.
+{% endhint %}
+
+## Payload & Frame Limits
 
 | Property                | Default | Description              |
 | ----------------------- | ------- | ------------------------ |
@@ -83,10 +98,8 @@ config.setFirstDataTimeout(5000);
 config.setMaxHttpContentLength(256 * 1024);
 config.setMaxFramePayloadLength(256 * 1024);
 ```
-{% endstep %}
 
-{% step %}
-### CORS & HTTP Behavior
+## CORS & HTTP Behavior
 
 | Property              | Default | Description                    |
 | --------------------- | ------- | ------------------------------ |
@@ -101,10 +114,8 @@ config.setEnableCors(true);
 config.setOrigin("https://example.com");
 config.setAllowHeaders("Authorization,Content-Type");
 ```
-{% endstep %}
 
-{% step %}
-### Compression
+## Compression
 
 | Property               | Default | Description          |
 | ---------------------- | ------- | -------------------- |
@@ -115,24 +126,29 @@ config.setAllowHeaders("Authorization,Content-Type");
 config.setHttpCompression(true);
 config.setWebsocketCompression(true);
 ```
-{% endstep %}
 
-{% step %}
-### Buffer & ACK Handling
+## Buffer & ACK Handling
 
 | Property             | Default             | Description              |
 | -------------------- | ------------------- | ------------------------ |
 | `preferDirectBuffer` | `true`              | Use Netty direct buffers |
 | `ackMode`            | `AUTO_SUCCESS_ONLY` | Auto-ACK behavior        |
 
-```java
-config.setPreferDirectBuffer(true);
-config.setAckMode(AckMode.AUTO);
-```
-{% endstep %}
+<pre class="language-java"><code class="lang-java"><strong>config.setPreferDirectBuffer(true);
+</strong>config.setAckMode(AckMode.AUTO);
+</code></pre>
 
-{% step %}
-### Session & Security
+{% hint style="info" %}
+**Ack behavior**
+
+* Acks are sent **at most once** and **only if requested**
+* **Manual ack** always suppresses auto-ack
+* **`AUTO`** → always auto-acknowledges with `[]` (even on exception)
+* **`AUTO_SUCCESS_ONLY`** → auto-acknowledges with `[]` **only on success**
+* **`MANUAL`** → developer is fully responsible for sending the ack
+{% endhint %}
+
+## Session & Security
 
 | Property         | Default | Description               |
 | ---------------- | ------- | ------------------------- |
@@ -143,10 +159,8 @@ config.setAckMode(AckMode.AUTO);
 config.setRandomSession(true);
 config.setNeedClientAuth(true);
 ```
-{% endstep %}
 
-{% step %}
-### JSON Serialization
+## JSON Serialization
 
 | Property      | Default       | Description              |
 | ------------- | ------------- | ------------------------ |
@@ -155,10 +169,8 @@ config.setNeedClientAuth(true);
 ```java
 config.setJsonSupport(new JacksonJsonSupport());
 ```
-{% endstep %}
 
-{% step %}
-### Authorization
+## Authorization
 
 | Property                | Default   | Description             |
 | ----------------------- | --------- | ----------------------- |
@@ -169,10 +181,8 @@ config.setAuthorizationListener(data -> {
     return AuthorizationResult.SUCCESS;
 });
 ```
-{% endstep %}
 
-{% step %}
-### Exception Handling
+## Exception Handling
 
 | Property            | Default                    | Description           |
 | ------------------- | -------------------------- | --------------------- |
@@ -186,35 +196,32 @@ config.setExceptionListener(new ExceptionListener() {
     }
 });
 ```
-{% endstep %}
 
-{% step %}
-### Store / Clustering
-
-| Store                   | Use Case      |
-| ----------------------- | ------------- |
-| `MemoryStoreFactory`    | Single-node   |
-| `RedissonStoreFactory`  | Redis cluster |
-| `HazelcastStoreFactory` | Hazelcast     |
+## Store / Clustering
 
 ```java
 config.setStoreFactory(new RedissonStoreFactory(redissonClient));
 ```
-{% endstep %}
 
-{% step %}
-### SSL / TLS
+{% hint style="info" %}
+Please check [Adapters](https://app.gitbook.com/o/shMwc485bv7qtDWf0s0D/s/vM0fEesNQnh9fdpchiWm/ "mention") for detailed explanation.
+{% endhint %}
+
+## SSL / TLS
 
 ```java
 SocketSslConfig ssl = new SocketSslConfig();
 ssl.setKeyStore("keystore.jks");
 ssl.setKeyStorePassword("changeit");
+/**
+//only uses when mTLS/zero-trust scenarios not usually for wss
+ssl.setTrustStore("truststore.jks");
+ssl.setTrustStorePassword("changeit");
+*/
 config.setSocketSslConfig(ssl);
 ```
-{% endstep %}
 
-{% step %}
-### HTTP Decoder Tuning
+## HTTP Decoder Tuning
 
 | Property               | Default       |
 | ---------------------- | ------------- |
@@ -227,10 +234,8 @@ HttpRequestDecoderConfiguration http = new HttpRequestDecoderConfiguration();
 http.setMaxHeaderSize(16 * 1024);
 config.setHttpRequestDecoderConfiguration(http);
 ```
-{% endstep %}
 
-{% step %}
-### Full Minimal Example
+## Full Minimal Example
 
 ```java
 Configuration config = new Configuration();
@@ -238,8 +243,6 @@ config.setPort(9092);
 config.setTransports(Transport.WEBSOCKET);
 config.setStoreFactory(new MemoryStoreFactory());
 ```
-{% endstep %}
-{% endstepper %}
 
 {% hint style="info" %}
 📌 Tip: Configuration is cloned internally for immutability. Treat it as write-once before server start.
