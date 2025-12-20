@@ -19,6 +19,8 @@ config.setPort(9092);
 config.setContext("/socket.io");
 ```
 
+***
+
 ## Threading Model
 
 | Property        | Type  | Default | Notes                          |
@@ -38,6 +40,8 @@ Add boss threads **only** to increase **connection accept rate**; use **1 for mo
 Scale worker threads for throughput—too many cause context switching.
 {% endhint %}
 
+***
+
 ## Transport Configuration
 
 | Property         | Type              | Default              | Description                                            |
@@ -56,6 +60,8 @@ config.setTransportType(TransportType.EPOLL);
 
 If the selected transport is not available on the current platform, socketio4j **safely falls back to NIO** without failing startup.
 {% endhint %}
+
+***
 
 ## Heartbeat & Timeouts
 
@@ -87,6 +93,8 @@ Lower values improve NAT survivability and faster dead-peer detection, but **inc
 Higher values reduce overhead, but risk **silent disconnects** on NATs and load balancers.
 {% endhint %}
 
+***
+
 ## Payload & Frame Limits
 
 | Property                | Default | Description              |
@@ -98,6 +106,8 @@ Higher values reduce overhead, but risk **silent disconnects** on NATs and load 
 config.setMaxHttpContentLength(256 * 1024);
 config.setMaxFramePayloadLength(256 * 1024);
 ```
+
+***
 
 ## CORS & HTTP Behavior
 
@@ -115,6 +125,8 @@ config.setOrigin("https://example.com");
 config.setAllowHeaders("Authorization,Content-Type");
 ```
 
+***
+
 ## Compression
 
 | Property               | Default | Description          |
@@ -126,6 +138,8 @@ config.setAllowHeaders("Authorization,Content-Type");
 config.setHttpCompression(true);
 config.setWebsocketCompression(true);
 ```
+
+***
 
 ## Buffer & ACK Handling
 
@@ -148,6 +162,8 @@ config.setWebsocketCompression(true);
 * **`MANUAL`** → developer is fully responsible for sending the ack
 {% endhint %}
 
+***
+
 ## Session & Security
 
 | Property         | Default | Description               |
@@ -160,6 +176,8 @@ config.setRandomSession(true);
 config.setNeedClientAuth(true);
 ```
 
+***
+
 ## JSON Serialization
 
 | Property      | Default       | Description              |
@@ -169,6 +187,8 @@ config.setNeedClientAuth(true);
 ```java
 config.setJsonSupport(new JacksonJsonSupport());
 ```
+
+***
 
 ## Authorization
 
@@ -181,6 +201,8 @@ config.setAuthorizationListener(data -> {
     return AuthorizationResult.SUCCESS;
 });
 ```
+
+***
 
 ## Exception Handling
 
@@ -197,6 +219,8 @@ config.setExceptionListener(new ExceptionListener() {
 });
 ```
 
+***
+
 ## Store / Clustering
 
 ```java
@@ -204,8 +228,10 @@ config.setStoreFactory(new RedissonStoreFactory(redissonClient));
 ```
 
 {% hint style="info" %}
-Please check [Adapters](https://app.gitbook.com/o/shMwc485bv7qtDWf0s0D/s/vM0fEesNQnh9fdpchiWm/ "mention") for detailed explanation.
+Please check [Adapters](https://app.gitbook.com/o/shMwc485bv7qtDWf0s0D/s/vM0fEesNQnh9fdpchiWm/) Page for detailed explanation.
 {% endhint %}
+
+***
 
 ## SSL / TLS
 
@@ -221,6 +247,8 @@ ssl.setTrustStorePassword("changeit");
 config.setSocketSslConfig(ssl);
 ```
 
+***
+
 ## HTTP Decoder Tuning
 
 | Property               | Default       |
@@ -234,6 +262,8 @@ HttpRequestDecoderConfiguration http = new HttpRequestDecoderConfiguration();
 http.setMaxHeaderSize(16 * 1024);
 config.setHttpRequestDecoderConfiguration(http);
 ```
+
+***
 
 ## Full Minimal Example
 
