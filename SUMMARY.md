@@ -1,3 +1,4 @@
 # Table of contents
 
-* [Developer Platform](README.md)
+* [Getting Started](README.md)
+* [Version Policy](version-policy.md)
