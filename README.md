@@ -11,13 +11,14 @@ icon: gear
 | `hostname` | `String` | `null`       | Bind address. If unset, binds to `0.0.0.0` / `::0` |
 | `port`     | `int`    | `-1`         | Server port (must be set)                          |
 | `context`  | `String` | `/socket.io` | Socket.IO context path                             |
-|            |          |              |                                                    |
 
 ```java
 config.setHostname("0.0.0.0");
 config.setPort(9092);
 config.setContext("/socket.io");
 ```
+
+
 
 ***
 
@@ -40,6 +41,8 @@ Add boss threads **only** to increase **connection accept rate**; use **1 for mo
 Scale worker threads for throughput—too many cause context switching.
 {% endhint %}
 
+
+
 ***
 
 ## Transport Configuration
@@ -60,6 +63,8 @@ config.setTransportType(TransportType.EPOLL);
 
 If the selected transport is not available on the current platform, socketio4j **safely falls back to NIO** without failing startup.
 {% endhint %}
+
+
 
 ***
 
