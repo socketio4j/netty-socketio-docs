@@ -1,17 +1,7 @@
 # Table of contents
 
-## Getting Started
+## Sample Projects
 
-* [Server Configuration](README.md)
-* [Server Instance](getting-started/server-instance.md)
-
-## Server Examples
-
-* [Core Java](server-examples/editor.md)
-* [Spring Boot](server-examples/spring-boot.md)
-* [Quarkus](server-examples/quarkus.md)
-* [Micronaut](server-examples/micronaut.md)
-
-## Client Examples
-
-* [Page 1](client-examples/page-1.md)
+* [Emergency broadcast app](README.md)
+* [Simple chat app](<README (1).md>)
+* [Stock market app](sample-projects/publish-your-docs.md)
