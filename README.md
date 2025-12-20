@@ -204,7 +204,7 @@ config.setStoreFactory(new RedissonStoreFactory(redissonClient));
 ```
 
 {% hint style="info" %}
-Please check [Introduction](https://app.gitbook.com/s/vM0fEesNQnh9fdpchiWm/ "mention") for detailed explanation.
+Please check [Adapters](https://app.gitbook.com/o/shMwc485bv7qtDWf0s0D/s/vM0fEesNQnh9fdpchiWm/ "mention") for detailed explanation.
 {% endhint %}
 
 ## SSL / TLS
