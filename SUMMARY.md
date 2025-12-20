@@ -1,4 +1,10 @@
 # Table of contents
 
-* [Getting Started](README.md)
-* [Version Policy](version-policy.md)
+## Getting Started
+
+* [Server Configuration](README.md)
+* [Server Start](getting-started/server-start.md)
+
+## Examples
+
+* [Core Java](examples/editor.md)
