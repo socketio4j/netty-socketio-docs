@@ -4,9 +4,8 @@ icon: gear
 
 # Server Configuration
 
-{% stepper %}
-{% step %}
-### Network & Binding
+
+## Network & Binding
 
 | Property   | Type     | Default      | Description                                        |
 | ---------- | -------- | ------------ | -------------------------------------------------- |
@@ -20,10 +19,8 @@ config.setHostname("0.0.0.0");
 config.setPort(9092);
 config.setContext("/socket.io");
 ```
-{% endstep %}
 
-{% step %}
-### Threading Model
+## Threading Model
 
 | Property        | Type  | Default | Notes                          |
 | --------------- | ----- | ------- | ------------------------------ |
@@ -34,10 +31,8 @@ config.setContext("/socket.io");
 config.setBossThreads(2);
 config.setWorkerThreads(16);
 ```
-{% endstep %}
 
-{% step %}
-### Transport Configuration
+## Transport Configuration
 
 | Property         | Type              | Default              | Description                                            |
 | ---------------- | ----------------- | -------------------- | ------------------------------------------------------ |
@@ -49,10 +44,8 @@ config.setWorkerThreads(16);
 config.setTransports(Transport.WEBSOCKET);
 config.setTransportType(TransportType.EPOLL);
 ```
-{% endstep %}
 
-{% step %}
-### Heartbeat & Timeouts
+## Heartbeat & Timeouts
 
 | Property           | Default    | Description                     |
 | ------------------ | ---------- | ------------------------------- |
@@ -65,10 +58,8 @@ config.setPingInterval(20000);
 config.setPingTimeout(60000);
 config.setFirstDataTimeout(5000);
 ```
-{% endstep %}
 
-{% step %}
-### Payload & Frame Limits
+## Payload & Frame Limits
 
 | Property                | Default | Description              |
 | ----------------------- | ------- | ------------------------ |
@@ -79,10 +70,8 @@ config.setFirstDataTimeout(5000);
 config.setMaxHttpContentLength(256 * 1024);
 config.setMaxFramePayloadLength(256 * 1024);
 ```
-{% endstep %}
 
-{% step %}
-### CORS & HTTP Behavior
+## CORS & HTTP Behavior
 
 | Property              | Default | Description                    |
 | --------------------- | ------- | ------------------------------ |
@@ -97,10 +86,8 @@ config.setEnableCors(true);
 config.setOrigin("https://example.com");
 config.setAllowHeaders("Authorization,Content-Type");
 ```
-{% endstep %}
 
-{% step %}
-### Compression
+## Compression
 
 | Property               | Default | Description          |
 | ---------------------- | ------- | -------------------- |
@@ -111,10 +98,8 @@ config.setAllowHeaders("Authorization,Content-Type");
 config.setHttpCompression(true);
 config.setWebsocketCompression(true);
 ```
-{% endstep %}
 
-{% step %}
-### Buffer & ACK Handling
+## Buffer & ACK Handling
 
 | Property             | Default             | Description              |
 | -------------------- | ------------------- | ------------------------ |
@@ -125,10 +110,8 @@ config.setWebsocketCompression(true);
 config.setPreferDirectBuffer(true);
 config.setAckMode(AckMode.AUTO);
 ```
-{% endstep %}
 
-{% step %}
-### Session & Security
+## Session & Security
 
 | Property         | Default | Description               |
 | ---------------- | ------- | ------------------------- |
@@ -139,10 +122,8 @@ config.setAckMode(AckMode.AUTO);
 config.setRandomSession(true);
 config.setNeedClientAuth(true);
 ```
-{% endstep %}
 
-{% step %}
-### JSON Serialization
+## JSON Serialization
 
 | Property      | Default       | Description              |
 | ------------- | ------------- | ------------------------ |
@@ -151,10 +132,8 @@ config.setNeedClientAuth(true);
 ```java
 config.setJsonSupport(new JacksonJsonSupport());
 ```
-{% endstep %}
 
-{% step %}
-### Authorization
+## Authorization
 
 | Property                | Default   | Description             |
 | ----------------------- | --------- | ----------------------- |
@@ -165,10 +144,8 @@ config.setAuthorizationListener(data -> {
     return AuthorizationResult.SUCCESS;
 });
 ```
-{% endstep %}
 
-{% step %}
-### Exception Handling
+## Exception Handling
 
 | Property            | Default                    | Description           |
 | ------------------- | -------------------------- | --------------------- |
@@ -182,10 +159,8 @@ config.setExceptionListener(new ExceptionListener() {
     }
 });
 ```
-{% endstep %}
 
-{% step %}
-### Store / Clustering
+## Store / Clustering
 
 | Store                   | Use Case      |
 | ----------------------- | ------------- |
@@ -196,10 +171,8 @@ config.setExceptionListener(new ExceptionListener() {
 ```java
 config.setStoreFactory(new RedissonStoreFactory(redissonClient));
 ```
-{% endstep %}
 
-{% step %}
-### SSL / TLS
+## SSL / TLS
 
 ```java
 SocketSslConfig ssl = new SocketSslConfig();
@@ -207,10 +180,8 @@ ssl.setKeyStore("keystore.jks");
 ssl.setKeyStorePassword("changeit");
 config.setSocketSslConfig(ssl);
 ```
-{% endstep %}
 
-{% step %}
-### HTTP Decoder Tuning
+## HTTP Decoder Tuning
 
 | Property               | Default       |
 | ---------------------- | ------------- |
@@ -223,10 +194,8 @@ HttpRequestDecoderConfiguration http = new HttpRequestDecoderConfiguration();
 http.setMaxHeaderSize(16 * 1024);
 config.setHttpRequestDecoderConfiguration(http);
 ```
-{% endstep %}
 
-{% step %}
-### Full Minimal Example
+## Full Minimal Example
 
 ```java
 Configuration config = new Configuration();
@@ -234,8 +203,7 @@ config.setPort(9092);
 config.setTransports(Transport.WEBSOCKET);
 config.setStoreFactory(new MemoryStoreFactory());
 ```
-{% endstep %}
-{% endstepper %}
+
 
 {% hint style="info" %}
 📌 Tip: Configuration is cloned internally for immutability. Treat it as write-once before server start.
