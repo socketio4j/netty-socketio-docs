@@ -4,7 +4,7 @@ icon: gear
 
 # Server Configuration
 
-## Full Minimal Example
+## Minimal Example
 
 ```java
 Configuration config = new Configuration();
