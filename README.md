@@ -19,7 +19,7 @@ config.setStoreFactory(new RedissonStoreFactory(redissonClient));
 Defaults work for most use cases; additional overrides are listed below.
 {% endhint %}
 
-{% hint style="info" %}
+{% hint style="warning" %}
 For connection auth check [here](./#authorization).
 {% endhint %}
 
