@@ -1,80 +1,207 @@
 ---
-icon: bullhorn
+icon: play
 ---
 
-# Emergency broadcast app
+# Getting Started
 
-## Server
+## Version
 
-```java
-import com.socketio4j.socketio.Configuration;
-import com.socketio4j.socketio.SocketIOServer;
-import com.socketio4j.socketio.SocketIOClient;
+* 5.0 - Planned & Experimental Phase
+* 4.0 - New API & Adapters - In Active Development & Support
+  * 4.0.0-SNAPSHOT - Upcoming LTS
+* 3.0 - Maintenance of parent fork
+  * 3.0.1 - Stable - Compatiable with parent fork
 
-public class EmergencyServer {
-    public static void main(String[] args) {
-        Configuration config = new Configuration();
-        config.setHostname("localhost");
-        config.setPort(9092);
+{% hint style="info" %}
+## Please check version policy for more [version-policy.md](version-policy.md "mention")
+{% endhint %}
 
-        SocketIOServer server = new SocketIOServer(config);
+## Java Support Matrix
 
-        // Event: broadcast emergency messages
-        server.addEventListener("emergency", String.class,
-            (SocketIOClient client, String message, var ack) -> {
-            // print locally
-            System.out.println("EMERGENCY message received: " + message);
+| Version | Minimum Java for Compilation | Minimum Java for Runtime | Recommended Java Versions |
+| ------- | ---------------------------- | ------------------------ | ------------------------- |
+| 3.0.x   | 11                           | 8                        | 17 / 21 / 25              |
+| 4.0.x   | 11                           | 8                        | 17 / 21 / 25              |
 
-            // send to all clients
-            server.getBroadcastOperations().sendEvent("emergency", message);
-        });
+## Installation
 
-        server.start();
-        System.out.println("Emergency server started on :9092");
-    }
+### Java
+
+{% tabs %}
+{% tab title="Maven" %}
+{% code title="pom.xml" %}
+```xml
+<dependency>
+  <groupId>com.socketio4j</groupId>
+  <artifactId>netty-socketio-core</artifactId>
+  <version>{$socketio.core.version}</version>
+</dependency>
+```
+{% endcode %}
+{% endtab %}
+
+{% tab title="Gradle - Groovy DSL" %}
+{% code title="build.gradle" %}
+```groovy
+dependencies {
+    implementation "com.socketio4j:netty-socketio-core:${socketioCoreVersion}"
 }
-
 ```
+{% endcode %}
+{% endtab %}
 
-## Client
-
-```html
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Emergency Alert Client</title>
-</head>
-
-<body>
-  <h1>🚨 Emergency Alert Listener</h1>
-  <p>Status: <span id="status">Connecting...</span></p>
-
-  <!-- Socket.IO client -->
-  <script src="https://cdn.socket.io/4.7.5/socket.io.min.js"></script>
-
-  <script>
-    const statusEl = document.getElementById("status");
-    const socket = io("http://localhost:9092");
-
-    socket.on("connect", () => {
-      statusEl.innerText = "Connected";
-      console.log("Connected to emergency server");
-    });
-
-    // listen for emergency alert broadcasts
-    socket.on("emergency", msg => {
-      console.log("Emergency alert received:", msg);
-      alert("🚨 Emergency: " + msg);
-    });
-
-    socket.on("disconnect", () => {
-      statusEl.innerText = "Disconnected";
-    });
-  </script>
-
-</body>
-</html>
-
+{% tab title="Gradle - Kotlin DSL" %}
+{% code title="build.gradle.kts" %}
+```kts
+dependencies {
+    implementation("com.socketio4j:netty-socketio-quarkus:$socketioCoreVersion")
+}
 ```
+{% endcode %}
+{% endtab %}
+{% endtabs %}
+
+### Spring
+
+{% tabs %}
+{% tab title="Maven" %}
+{% code title="pom.xml" %}
+```xml
+<dependency>
+  <groupId>com.socketio4j</groupId>
+  <artifactId>netty-socketio-spring</artifactId>
+  <version>{$socketio.spring.version}</version>
+</dependency>
+```
+{% endcode %}
+{% endtab %}
+
+{% tab title="Gradle - Groovy DSL" %}
+{% code title="build.gradle" %}
+```groovy
+dependencies {
+    implementation "com.socketio4j:netty-socketio-spring:${socketioSpringVersion}"
+}
+```
+{% endcode %}
+{% endtab %}
+
+{% tab title="Gradle - Kotlin DSL" %}
+{% code title="build.gradle.kts" %}
+```kts
+dependencies {
+    implementation("com.socketio4j:netty-socketio-spring:$socketioSpringVersion")
+}
+```
+{% endcode %}
+{% endtab %}
+{% endtabs %}
+
+### Spring Boot
+
+{% tabs %}
+{% tab title="Maven" %}
+{% code title="pom.xml" %}
+```xml
+<dependency>
+  <groupId>com.socketio4j</groupId>
+  <artifactId>netty-socketio-spring-boot-starter</artifactId>
+  <version>{$socketio.spring-boot-starter.version}</version>
+</dependency>
+```
+{% endcode %}
+{% endtab %}
+
+{% tab title="Gradle - Groovy DSL" %}
+{% code title="build.gradle" %}
+```groovy
+dependencies {
+    implementation "com.socketio4j:netty-socketio-spring-boot-starter:${socketioSpringBootStarterVersion}"
+}
+```
+{% endcode %}
+{% endtab %}
+
+{% tab title="Gradle - Kotlin DSL" %}
+{% code title="build.gradle.kts" %}
+```kts
+dependencies {
+    implementation("com.socketio4j:netty-socketio-spring-boot-starter:$socketioSpringBootStarterVersion")
+}
+```
+{% endcode %}
+{% endtab %}
+{% endtabs %}
+
+### Quarkus
+
+{% tabs %}
+{% tab title="Maven" %}
+{% code title="pom.xml" %}
+```xml
+<dependency>
+  <groupId>com.socketio4j</groupId>
+  <artifactId>netty-socketio-quarkus</artifactId>
+  <version>{$socketio.quarkus.version}</version>
+</dependency>
+```
+{% endcode %}
+{% endtab %}
+
+{% tab title="Gradle - Groovy DSL" %}
+{% code title="build.gradle" %}
+```groovy
+dependencies {
+    implementation "com.socketio4j:netty-socketio-quarkus:${socketioQuarkusVersion}"
+}
+```
+{% endcode %}
+{% endtab %}
+
+{% tab title="Gradle - Kotlin DSL" %}
+{% code title="build.gradle.kts" %}
+```kts
+dependencies {
+    implementation("com.socketio4j:netty-socketio-quarkus:$socketioQuarkusVersion")
+}
+```
+{% endcode %}
+{% endtab %}
+{% endtabs %}
+
+### Micronaut
+
+{% tabs %}
+{% tab title="Maven" %}
+{% code title="pom.xml" %}
+```xml
+<dependency>
+  <groupId>com.socketio4j</groupId>
+  <artifactId>netty-socketio-micronaut</artifactId>
+  <version>{$socketio.micronaut.version}</version>
+</dependency>
+```
+{% endcode %}
+{% endtab %}
+
+{% tab title="Gradle - Groovy DSL" %}
+{% code title="build.gradle" %}
+```groovy
+dependencies {
+    implementation "com.socketio4j:netty-socketio-micronaut:${socketioMicronautVersion}"
+}
+```
+{% endcode %}
+{% endtab %}
+
+{% tab title="Gradle - Kotlin DSL" %}
+{% code title="build.gradle.kts" %}
+```kts
+dependencies {
+    implementation("com.socketio4j:netty-socketio-micronaut:$socketioMicronautVersion")
+}
+```
+{% endcode %}
+{% endtab %}
+{% endtabs %}
+
