@@ -1,5 +1,5 @@
 ---
-icon: plug-circle-plus
+icon: list-timeline
 layout:
   width: default
   title:
@@ -19,12 +19,44 @@ metaLinks:
     - https://app.gitbook.com/s/yE16Xb3IemPxJWydtPOj/basics/integrations
 ---
 
-# Integrations
+# Kafka/AutoMQ
 
-GitBook integrations allow you to connect your GitBook spaces to some of your favorite platforms and services. You can install integrations into your GitBook page from the _Integrations_ menu in the top left.
+The **KafkaEventStore** provides a **distributed, streaming event store** for socketio4j using Apache Kafka.\
+It enables **horizontal scaling** by broadcasting events across all server instances so that event messages, room joins, leaves, and other internal events are synchronized between nodes.
 
-<figure><img src="https://gitbookio.github.io/onboarding-template-images/integrations-hero.png" alt=""><figcaption></figcaption></figure>
+**Key characteristics**
 
-### Types of integrations
+* **Distributed & fault-tolerant** — events are persisted to Kafka and delivered to every active node
+* **Async & non-blocking publishing** — avoids blocking Netty event loops
+* **Event replay boundaries** — starts consuming from _newest_ messages only (no history replay)
+* **Streaming broadcast semantics** — each node receives **all events**, not load-balanced messages
+* **Duplicate prevention** — skips events originating from the same node (`nodeId` filtering)
 
-<table data-card-size="large" data-view="cards"><thead><tr><th></th><th></th><th data-hidden data-card-target data-type="content-ref"></th><th data-hidden data-card-cover data-type="files"></th><th data-hidden></th></tr></thead><tbody><tr><td><strong>Analytics</strong></td><td>Track analytics from your docs</td><td><a href="https://www.gitbook.com/integrations#analytics">https://www.gitbook.com/integrations#analytics</a></td><td></td><td></td></tr><tr><td><strong>Support</strong></td><td>Add support widgets to your docs</td><td><a href="https://www.gitbook.com/integrations#support">https://www.gitbook.com/integrations#support</a></td><td></td><td></td></tr><tr><td><strong>Interactive</strong></td><td>Add extra functionality to your docs</td><td><a href="https://www.gitbook.com/integrations#interactive">https://www.gitbook.com/integrations#interactive</a></td><td></td><td></td></tr><tr><td><strong>Visitor Authentication</strong></td><td>Protect your docs and require sign-in</td><td><a href="https://www.gitbook.com/integrations#visitor-authentication">https://www.gitbook.com/integrations#visitor-authentication</a></td><td></td><td></td></tr></tbody></table>
+**How it works**
+
+* Every publish stores the event into a Kafka topic (single or per-type depending on mode)
+* Each subscribed event type is polled by a dedicated daemon thread
+* Messages are delivered to local listeners only if they **came from a different node**
+* Corrupted (“poison pill”) records are skipped to keep consumption alive
+
+**Modes**
+
+| Mode             | Behavior                                  | When to use                                             |
+| ---------------- | ----------------------------------------- | ------------------------------------------------------- |
+| `MULTI_CHANNEL`  | Each event type gets its own Kafka topic  | Default; parallelism & separation                       |
+| `SINGLE_CHANNEL` | All events routed to `ALL_SINGLE_CHANNEL` | When global ordering across all event types is required |
+
+**Advantages**
+
+* 👍 Works in multi-node deployments
+* 👍 Synchronizes socketio4j events across servers
+* 👍 Safe shutdown & listener cleanup
+* 👍 Zero back-pressure on Netty threads
+
+**Limitations**
+
+* ❌ Not a point-to-point queue — always broadcast style
+* ❌ No historical replay — consumes from latest offsets only
+* ❌ Requires Kafka cluster availability
+
+> **Delivery guarantee:** _At-least-once semantics — duplicate deliveries possible; listeners should be idempotent._
