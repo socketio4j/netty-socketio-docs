@@ -24,6 +24,8 @@ metaLinks:
 The **RedisStreamEventStore** provides a distributed, streaming event store for socketio4j using **Redis Streams (XADD / XREAD)**.\
 It enables horizontal scaling by synchronizing events across multiple server instances so that internal state, room membership, and other distributed operations remain consistent across nodes.
 
+> Redis Reliable Pub/Sub uses Streams internally for durability, but does not expose offsets; Redis Streams exposes offsets directly, enabling controlled replay and connection-state recovery feature(planned for development).
+
 **Key characteristics**
 
 * **Distributed streaming** — uses Redis Streams to deliver events to all active nodes
