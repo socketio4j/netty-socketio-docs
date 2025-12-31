@@ -1,8 +1,10 @@
 # Table of contents
 
-## Group 1
+## Introduction
 
-* [Page 1](README.md)
+* [Store](README.md)
+* [Event Store](introduction/event-store.md)
+* [Store Factory](introduction/store-factory.md)
 
 ***
 
