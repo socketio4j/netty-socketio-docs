@@ -24,8 +24,6 @@
 * [Kafka/AutoMQ](event-store/integrations.md)
 * [Memory Event Store](event-store/memory-event-store.md)
 
-## Example
+## Examples
 
-* [Memory Store Adapter](example/memory-store-adapter.md)
-* [Redis Store Adapter](example/redis-store-adapter.md)
-* [Hazelcast Store Adapter](example/hazelcast-store-adapter.md)
+* [Memory Store + Redis Pub/Sub Event Store](examples/memory-store-+-redis-pub-sub-event-store.md)

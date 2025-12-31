@@ -1,2 +1,0 @@
-# Memory Store Adapter
-
