@@ -21,6 +21,8 @@ layout:
 The **RedissonReliableEventStore** provides a distributed, _replay-capable_ event store for socketio4j using **Redis Reliable Topics backed by Redis Streams**.\
 It supports multi-node synchronization with optional stream trimming to control memory footprint, enabling durability across server restarts while still delivering events in near real time.
 
+> Redis Reliable Pub/Sub uses Streams internally for durability, but does not expose offsets; Redis Streams exposes offsets directly, enabling controlled replay and connection-state recovery feature(planned for development).
+
 **Key characteristics**
 
 * **Reliable delivery via Redis Streams** — retains recent messages for controlled replay
