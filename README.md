@@ -1,75 +1,23 @@
-# Store
+---
+icon: webhook
+---
 
-The **Store** interface defines a per-session key-value storage abstraction for socketio4j. It allows transports, namespaces, and user code to persist small pieces of session-scoped metadata such as user IDs, authentication tokens, connection state, or room membership hints—independent of the actual backing storage implementation.
+# API docs
 
-**Key characteristics**
+Please check the clients and API docs for reference
 
-* **Session-scoped storage** — one store instance exists per connected client session
-* **Key-value semantic** — arbitrary objects associated with string keys
-* **Backend-agnostic** — implementations may use memory, Hazelcast, Redis, or other data stores
-* **Lifecycle-aware** — destroyed when the underlying client disconnects
-* **Type-safe retrieval** — returned values can be cast or generically typed
+{% hint style="warning" %}
+**Warning:** Use client versions compatible with **Socket.IO Server v4**. Previous versions **may not be supported and may not work** correctly
+{% endhint %}
 
-**How it works**
+<table><thead><tr><th width="161">Langauge</th><th>Link</th></tr></thead><tbody><tr><td>Java</td><td><a href="https://socketio.github.io/socket.io-client-java/installation.html">https://socketio.github.io/socket.io-client-java/installation.html</a></td></tr><tr><td>Node.js</td><td><a href="https://socket.io/docs/v4/client-api/">https://socket.io/docs/v4/client-api/</a></td></tr><tr><td>Dart / Flutter</td><td><a href="https://pub.dev/packages/socket_io_client">https://pub.dev/packages/socket_io_client</a></td></tr><tr><td>Swift (iOS)</td><td><a href="https://github.com/socketio/socket.io-client-swift">https://github.com/socketio/socket.io-client-swift</a></td></tr></tbody></table>
 
-* `set` associates a value with a key for the lifetime of the session
-* `get` returns a stored value, or `null` if not present
-* `has` checks for key existence without loading the value
-* `del` removes a single key-value entry
-* `destroy` removes all entries, invalidating the store instance
+{% hint style="danger" %}
+Not all client-side APIs may be available in the server implementation, and vice versa.
+{% endhint %}
 
-**Usage scenarios**
+## Compatibility Matrix
 
-CaseExample
 
-Authentication
 
-store `"userId"`, `"tenant"`, `"tokenClaims"`
-
-Reconnection hints
-
-store `"rooms"` or custom metadata
-
-Custom handshake parameters
-
-persist user metadata from upgrade/handshake
-
-Namespaced logic
-
-attach state needed only during the current session
-
-**Advantages**
-
-👍 Works uniformly across clustered and standalone modes 👍 Keeps session metadata isolated to each connection 👍 Allows switching storage backend without user code changes 👍 Supports lightweight in-memory operation for single-node deployments
-
-**Limitations**
-
-❌ Not intended for large objects or binary storage ❌ Not a distributed data model by itself — distribution depends on implementation ❌ No built-in TTL or expiration beyond session lifecycle ❌ Not shared across sessions unless backed by shared storage
-
-***
-
-**Backend behavior**
-
-BackendPersistenceVisibilityCharacteristics
-
-**In-memory**
-
-Ephemeral, cleared on disconnect or JVM restart
-
-Local only
-
-Fastest, best for single node
-
-**Hazelcast / Redisson / others**
-
-Distributed (based on backend config)
-
-Accessible across nodes
-
-Recommended for multi-node deployments
-
-***
-
-**Lifecycle guarantee**
-
-> **A Store instance lives for exactly one client session and is destroyed when the session ends.** After calling `destroy()`, the store must not be accessed again.
+<table><thead><tr><th width="149.796875" align="center" valign="middle">Client API</th><th width="147.515625" align="center">Netty‑SocketIO Support</th><th width="305.6953125" align="center">JavaScript Client</th><th width="347.96484375" align="center">Java Client</th><th width="361.54296875" align="center">Python Client</th><th width="291.40234375" align="center">C++ Client</th><th width="279.4375" align="center">Swift Client</th><th width="289.234375" align="center">Dart/Flutter Client</th><th width="266.38671875" align="center">.NET Client</th><th width="300.39453125" align="center">PHP Client</th><th width="273.578125" align="center">Go Client</th><th width="311.2578125" align="center">Notes</th></tr></thead><tbody><tr><td align="center" valign="middle"><strong>Connect</strong></td><td align="center">✅ Yes</td><td align="center"><code>io(url, opts)</code></td><td align="center"><code>IO.socket(url)</code></td><td align="center"><code>sio.connect(url)</code></td><td align="center"><code>socket.connect()</code></td><td align="center"><code>socket.connect()</code></td><td align="center"><code>socket.connect()</code></td><td align="center"><code>socket.Connect()</code></td><td align="center"><code>client->Connect()</code></td><td align="center"><code>socket.Connect()</code></td><td align="center">Standard connect method </td></tr><tr><td align="center" valign="middle"><strong>Disconnect</strong></td><td align="center">✅ Yes</td><td align="center"><code>socket.disconnect()</code></td><td align="center"><code>socket.disconnect()</code></td><td align="center"><code>sio.disconnect()</code></td><td align="center"><code>socket.disconnect()</code></td><td align="center"><code>socket.disconnect()</code></td><td align="center"><code>socket.disconnect()</code></td><td align="center"><code>socket.Disconnect()</code></td><td align="center"><code>client->Disconnect()</code></td><td align="center"><code>socket.Disconnect()</code></td><td align="center">Client disconnects from server</td></tr><tr><td align="center" valign="middle"><strong>Event listen</strong></td><td align="center">✅ Yes</td><td align="center"><code>socket.on(event, cb)</code></td><td align="center"><code>socket.on(EVENT, listener)</code></td><td align="center"><code>@sio.on(event)</code></td><td align="center"><code>socket.on(event, cb)</code></td><td align="center"><code>socket.on(event, cb)</code></td><td align="center"><code>socket.on(event, cb)</code></td><td align="center"><code>socket.On(event, cb)</code></td><td align="center"><code>client->On(event, cb)</code></td><td align="center"><code>socket.On(event, cb)</code></td><td align="center">Standard event handler</td></tr><tr><td align="center" valign="middle"><strong>One‑time listener</strong></td><td align="center">✅ Yes</td><td align="center"><code>socket.once(event, cb)</code></td><td align="center"><code>socket.once(EVENT, listener)</code></td><td align="center"><code>@sio.once(event)</code> </td><td align="center"><code>socket.once(event, cb)</code></td><td align="center"><code>socket.once(event, cb)</code></td><td align="center"><code>socket.once(event, cb)</code></td><td align="center"><code>socket.Once(event, cb)</code></td><td align="center"><code>client->Once(event, cb)</code></td><td align="center"><code>socket.Once(event, cb)</code></td><td align="center">Some clients don’t have built‑in once</td></tr><tr><td align="center" valign="middle"><strong>Remove listener</strong></td><td align="center">✅ Yes</td><td align="center"><code>socket.off()</code> / <code>socket.removeListener()</code></td><td align="center"><code>socket.off(EVENT)</code></td><td align="center"><code>sio.off(event)</code> </td><td align="center"><code>socket.off(event)</code></td><td align="center"><code>socket.off(event)</code></td><td align="center"><code>socket.off(event)</code></td><td align="center"><code>socket.Off(event)</code></td><td align="center"><code>client->Off(event)</code></td><td align="center"><code>socket.Off(event)</code></td><td align="center">Most clients support listener removal cycles</td></tr><tr><td align="center" valign="middle"><strong>Emit event</strong></td><td align="center">✅ Yes</td><td align="center"><code>socket.emit(event, …args)</code></td><td align="center"><code>socket.emit(event, …args)</code></td><td align="center"><code>sio.emit(event, data)</code> </td><td align="center"><code>socket.emit(event, data)</code></td><td align="center"><code>socket.emit(event, data)</code></td><td align="center"><code>socket.emit(event, data)</code></td><td align="center"><code>socket.Emit(event, data)</code></td><td align="center"><code>client->Emit(event, data)</code></td><td align="center"><code>socket.Emit(event, data)</code></td><td align="center">Standard emit</td></tr><tr><td align="center" valign="middle"><strong>Emit with ack</strong></td><td align="center">✅ Yes</td><td align="center"><code>socket.emit(event, …, callback)</code> / <code>emitWithAck()</code></td><td align="center"><code>socket.emit(event, …args, AckCallback)</code></td><td align="center"><code>sio.call(event, data)</code> / <code>await sio.emit(event, data, callback)</code> </td><td align="center"><code>socket.emit(event, data, cb)</code></td><td align="center"><code>socket.emit(event, data, cb)</code></td><td align="center"><code>socket.emit(event, data, cb)</code></td><td align="center"><code>socket.Emit(event, data, cb)</code></td><td align="center"><code>client->Emit(event, data, cb)</code></td><td align="center"><code>socket.Emit(event, data, cb)</code></td><td align="center">Ack support varies</td></tr><tr><td align="center" valign="middle"><strong>Namespace API</strong></td><td align="center">✅ Yes</td><td align="center"><code>io(url/ns)</code> / <code>socket.nsp</code></td><td align="center"><code>socket.of("/ns")</code></td><td align="center"><code>sio.connect(url, namespaces=["/ns"])</code> </td><td align="center"><code>socket.of("/ns")</code></td><td align="center"><code>socket.of("/ns")</code></td><td align="center"><code>socket.of("/ns")</code></td><td align="center"><code>socket.Of("/ns")</code></td><td align="center"><code>client->Of("/ns")</code></td><td align="center"><code>socket.Of("/ns")</code></td><td align="center">Most multi‑namespace clients support</td></tr><tr><td align="center" valign="middle"><strong>Query / Auth</strong></td><td align="center">⚠️ Limited</td><td align="center"><code>io(url, { auth, query })</code></td><td align="center"><code>IO.Options.query</code>/<code>setAuth(Map&#x3C;String,Object>)</code></td><td align="center"><code>sio.connect(url, auth={…})</code> </td><td align="center"><code>socket.setAuth(data)</code></td><td align="center"><code>socket.setAuth(data)</code></td><td align="center"><code>socket.setAuth(data)</code></td><td align="center"><code>socket.SetAuth(data)</code></td><td align="center"><code>client->SetAuth(data)</code></td><td align="center"><code>socket.SetAuth(data)</code></td><td align="center">Handshake params pass through</td></tr><tr><td align="center" valign="middle"><strong>Reconnection control</strong></td><td align="center">⚠️ Partial</td><td align="center">Managed by client options</td><td align="center"><code>socket.io().reconnection(true/false)</code></td><td align="center"><code>sio.reconnect()</code> or handled by <code>sio.connect()</code></td><td align="center">Client library dependent</td><td align="center">Client library dependent</td><td align="center">Client library dependent</td><td align="center">Client library dependent</td><td align="center">Client library dependent</td><td align="center">Client library dependent</td><td align="center">Auto reconnect logic client</td></tr><tr><td align="center" valign="middle"><strong>Volatile emit</strong></td><td align="center">⚠️ Limited</td><td align="center"><code>socket.volatile.emit()</code></td><td align="center">JS-only / no standard in Java client</td><td align="center">⚠️ Rare / not standard</td><td align="center">Varies</td><td align="center">Varies</td><td align="center">Varies</td><td align="center">Varies</td><td align="center">Varies</td><td align="center">Varies</td><td align="center">Not consistently implemented</td></tr><tr><td align="center" valign="middle"><strong>Compression flags</strong></td><td align="center">⚠️ Internal</td><td align="center"><code>socket.compress()</code></td><td align="center">Not standard</td><td align="center">Not standard</td><td align="center">Not standard</td><td align="center">Varies</td><td align="center">Varies</td><td align="center">Varies</td><td align="center">Varies</td><td align="center">Varies</td><td align="center">Usually internal</td></tr><tr><td align="center" valign="middle"><strong>Client middleware (<code>use()</code>)</strong></td><td align="center">❌ No</td><td align="center">JS only</td><td align="center">❌</td><td align="center">❌</td><td align="center">❌</td><td align="center">❌</td><td align="center">❌</td><td align="center">❌</td><td align="center">❌</td><td align="center">❌</td><td align="center">Middleware API largely JS only</td></tr><tr><td align="center" valign="middle"><strong>Engine/Manager internals</strong></td><td align="center">❌ No</td><td align="center"><code>socket.io</code> / Manager</td><td align="center">Internal</td><td align="center">Internal</td><td align="center">Internal</td><td align="center">Internal</td><td align="center">Internal</td><td align="center">Internal</td><td align="center">Internal</td><td align="center">Internal</td><td align="center">Client internals not mirrored on server</td></tr></tbody></table>
