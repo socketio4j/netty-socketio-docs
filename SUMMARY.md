@@ -5,10 +5,7 @@
 * [Store](README.md)
 * [Event Store](introduction/event-store.md)
 * [Store Factory](introduction/store-factory.md)
-
-***
-
-* [Introduction](<README (1).md>)
+* [Store Factory API](introduction/store-factory-api.md)
 
 ## Store
 
