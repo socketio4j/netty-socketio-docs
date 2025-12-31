@@ -1,23 +1,143 @@
 ---
-icon: webhook
+icon: object-ungroup
 ---
 
-# API docs
+# Namespace
 
-Please check the clients and API docs for reference
+## Namespaces
 
-{% hint style="warning" %}
-**Warning:** Use client versions compatible with **Socket.IO Server v4**. Previous versions **may not be supported and may not work** correctly
+Namespaces provide logical separation of features and event handling within the SocketIO server.\
+They allow different parts of an application to operate independently using a **single physical connection**.
+
+{% hint style="info" %}
+**Namespaces do not create separate socket connections.**\
+A client connects once and can join multiple namespaces over the same underlying WebSocket/TCP session.
 {% endhint %}
 
-<table><thead><tr><th width="161">Langauge</th><th>Link</th></tr></thead><tbody><tr><td>Java</td><td><a href="https://socketio.github.io/socket.io-client-java/installation.html">https://socketio.github.io/socket.io-client-java/installation.html</a></td></tr><tr><td>Node.js</td><td><a href="https://socket.io/docs/v4/client-api/">https://socket.io/docs/v4/client-api/</a></td></tr><tr><td>Dart / Flutter</td><td><a href="https://pub.dev/packages/socket_io_client">https://pub.dev/packages/socket_io_client</a></td></tr><tr><td>Swift (iOS)</td><td><a href="https://github.com/socketio/socket.io-client-swift">https://github.com/socketio/socket.io-client-swift</a></td></tr></tbody></table>
+***
 
-{% hint style="danger" %}
-Not all client-side APIs may be available in the server implementation, and vice versa.
-{% endhint %}
+### Default Namespace
 
-## Compatibility Matrix
+If a client connects without specifying a namespace, it is attached to the default namespace (`""`).
 
+```java
+Configuration config = new Configuration();
+config.setPort(9092);
 
+SocketIOServer server = new SocketIOServer(config);
+// default namespace exists implicitly
+server.start();
+```
 
-<table><thead><tr><th width="149.796875" align="center" valign="middle">Client API</th><th width="147.515625" align="center">Netty‑SocketIO Support</th><th width="305.6953125" align="center">JavaScript Client</th><th width="347.96484375" align="center">Java Client</th><th width="361.54296875" align="center">Python Client</th><th width="291.40234375" align="center">C++ Client</th><th width="279.4375" align="center">Swift Client</th><th width="289.234375" align="center">Dart/Flutter Client</th><th width="266.38671875" align="center">.NET Client</th><th width="300.39453125" align="center">PHP Client</th><th width="273.578125" align="center">Go Client</th><th width="311.2578125" align="center">Notes</th></tr></thead><tbody><tr><td align="center" valign="middle"><strong>Connect</strong></td><td align="center">✅ Yes</td><td align="center"><code>io(url, opts)</code></td><td align="center"><code>IO.socket(url)</code></td><td align="center"><code>sio.connect(url)</code></td><td align="center"><code>socket.connect()</code></td><td align="center"><code>socket.connect()</code></td><td align="center"><code>socket.connect()</code></td><td align="center"><code>socket.Connect()</code></td><td align="center"><code>client->Connect()</code></td><td align="center"><code>socket.Connect()</code></td><td align="center">Standard connect method </td></tr><tr><td align="center" valign="middle"><strong>Disconnect</strong></td><td align="center">✅ Yes</td><td align="center"><code>socket.disconnect()</code></td><td align="center"><code>socket.disconnect()</code></td><td align="center"><code>sio.disconnect()</code></td><td align="center"><code>socket.disconnect()</code></td><td align="center"><code>socket.disconnect()</code></td><td align="center"><code>socket.disconnect()</code></td><td align="center"><code>socket.Disconnect()</code></td><td align="center"><code>client->Disconnect()</code></td><td align="center"><code>socket.Disconnect()</code></td><td align="center">Client disconnects from server</td></tr><tr><td align="center" valign="middle"><strong>Event listen</strong></td><td align="center">✅ Yes</td><td align="center"><code>socket.on(event, cb)</code></td><td align="center"><code>socket.on(EVENT, listener)</code></td><td align="center"><code>@sio.on(event)</code></td><td align="center"><code>socket.on(event, cb)</code></td><td align="center"><code>socket.on(event, cb)</code></td><td align="center"><code>socket.on(event, cb)</code></td><td align="center"><code>socket.On(event, cb)</code></td><td align="center"><code>client->On(event, cb)</code></td><td align="center"><code>socket.On(event, cb)</code></td><td align="center">Standard event handler</td></tr><tr><td align="center" valign="middle"><strong>One‑time listener</strong></td><td align="center">✅ Yes</td><td align="center"><code>socket.once(event, cb)</code></td><td align="center"><code>socket.once(EVENT, listener)</code></td><td align="center"><code>@sio.once(event)</code> </td><td align="center"><code>socket.once(event, cb)</code></td><td align="center"><code>socket.once(event, cb)</code></td><td align="center"><code>socket.once(event, cb)</code></td><td align="center"><code>socket.Once(event, cb)</code></td><td align="center"><code>client->Once(event, cb)</code></td><td align="center"><code>socket.Once(event, cb)</code></td><td align="center">Some clients don’t have built‑in once</td></tr><tr><td align="center" valign="middle"><strong>Remove listener</strong></td><td align="center">✅ Yes</td><td align="center"><code>socket.off()</code> / <code>socket.removeListener()</code></td><td align="center"><code>socket.off(EVENT)</code></td><td align="center"><code>sio.off(event)</code> </td><td align="center"><code>socket.off(event)</code></td><td align="center"><code>socket.off(event)</code></td><td align="center"><code>socket.off(event)</code></td><td align="center"><code>socket.Off(event)</code></td><td align="center"><code>client->Off(event)</code></td><td align="center"><code>socket.Off(event)</code></td><td align="center">Most clients support listener removal cycles</td></tr><tr><td align="center" valign="middle"><strong>Emit event</strong></td><td align="center">✅ Yes</td><td align="center"><code>socket.emit(event, …args)</code></td><td align="center"><code>socket.emit(event, …args)</code></td><td align="center"><code>sio.emit(event, data)</code> </td><td align="center"><code>socket.emit(event, data)</code></td><td align="center"><code>socket.emit(event, data)</code></td><td align="center"><code>socket.emit(event, data)</code></td><td align="center"><code>socket.Emit(event, data)</code></td><td align="center"><code>client->Emit(event, data)</code></td><td align="center"><code>socket.Emit(event, data)</code></td><td align="center">Standard emit</td></tr><tr><td align="center" valign="middle"><strong>Emit with ack</strong></td><td align="center">✅ Yes</td><td align="center"><code>socket.emit(event, …, callback)</code> / <code>emitWithAck()</code></td><td align="center"><code>socket.emit(event, …args, AckCallback)</code></td><td align="center"><code>sio.call(event, data)</code> / <code>await sio.emit(event, data, callback)</code> </td><td align="center"><code>socket.emit(event, data, cb)</code></td><td align="center"><code>socket.emit(event, data, cb)</code></td><td align="center"><code>socket.emit(event, data, cb)</code></td><td align="center"><code>socket.Emit(event, data, cb)</code></td><td align="center"><code>client->Emit(event, data, cb)</code></td><td align="center"><code>socket.Emit(event, data, cb)</code></td><td align="center">Ack support varies</td></tr><tr><td align="center" valign="middle"><strong>Namespace API</strong></td><td align="center">✅ Yes</td><td align="center"><code>io(url/ns)</code> / <code>socket.nsp</code></td><td align="center"><code>socket.of("/ns")</code></td><td align="center"><code>sio.connect(url, namespaces=["/ns"])</code> </td><td align="center"><code>socket.of("/ns")</code></td><td align="center"><code>socket.of("/ns")</code></td><td align="center"><code>socket.of("/ns")</code></td><td align="center"><code>socket.Of("/ns")</code></td><td align="center"><code>client->Of("/ns")</code></td><td align="center"><code>socket.Of("/ns")</code></td><td align="center">Most multi‑namespace clients support</td></tr><tr><td align="center" valign="middle"><strong>Query / Auth</strong></td><td align="center">⚠️ Limited</td><td align="center"><code>io(url, { auth, query })</code></td><td align="center"><code>IO.Options.query</code>/<code>setAuth(Map&#x3C;String,Object>)</code></td><td align="center"><code>sio.connect(url, auth={…})</code> </td><td align="center"><code>socket.setAuth(data)</code></td><td align="center"><code>socket.setAuth(data)</code></td><td align="center"><code>socket.setAuth(data)</code></td><td align="center"><code>socket.SetAuth(data)</code></td><td align="center"><code>client->SetAuth(data)</code></td><td align="center"><code>socket.SetAuth(data)</code></td><td align="center">Handshake params pass through</td></tr><tr><td align="center" valign="middle"><strong>Reconnection control</strong></td><td align="center">⚠️ Partial</td><td align="center">Managed by client options</td><td align="center"><code>socket.io().reconnection(true/false)</code></td><td align="center"><code>sio.reconnect()</code> or handled by <code>sio.connect()</code></td><td align="center">Client library dependent</td><td align="center">Client library dependent</td><td align="center">Client library dependent</td><td align="center">Client library dependent</td><td align="center">Client library dependent</td><td align="center">Client library dependent</td><td align="center">Auto reconnect logic client</td></tr><tr><td align="center" valign="middle"><strong>Volatile emit</strong></td><td align="center">⚠️ Limited</td><td align="center"><code>socket.volatile.emit()</code></td><td align="center">JS-only / no standard in Java client</td><td align="center">⚠️ Rare / not standard</td><td align="center">Varies</td><td align="center">Varies</td><td align="center">Varies</td><td align="center">Varies</td><td align="center">Varies</td><td align="center">Varies</td><td align="center">Not consistently implemented</td></tr><tr><td align="center" valign="middle"><strong>Compression flags</strong></td><td align="center">⚠️ Internal</td><td align="center"><code>socket.compress()</code></td><td align="center">Not standard</td><td align="center">Not standard</td><td align="center">Not standard</td><td align="center">Varies</td><td align="center">Varies</td><td align="center">Varies</td><td align="center">Varies</td><td align="center">Varies</td><td align="center">Usually internal</td></tr><tr><td align="center" valign="middle"><strong>Client middleware (<code>use()</code>)</strong></td><td align="center">❌ No</td><td align="center">JS only</td><td align="center">❌</td><td align="center">❌</td><td align="center">❌</td><td align="center">❌</td><td align="center">❌</td><td align="center">❌</td><td align="center">❌</td><td align="center">❌</td><td align="center">Middleware API largely JS only</td></tr><tr><td align="center" valign="middle"><strong>Engine/Manager internals</strong></td><td align="center">❌ No</td><td align="center"><code>socket.io</code> / Manager</td><td align="center">Internal</td><td align="center">Internal</td><td align="center">Internal</td><td align="center">Internal</td><td align="center">Internal</td><td align="center">Internal</td><td align="center">Internal</td><td align="center">Internal</td><td align="center">Client internals not mirrored on server</td></tr></tbody></table>
+### Custom Namespace
+
+Custom namespaces separate application concerns and event scopes.
+
+```java
+SocketIOServer server = new SocketIOServer(config);
+
+Namespace chat = server.addNamespace("/chat");
+Namespace admin = server.addNamespace("/auth");
+
+server.start();
+```
+
+Each namespace defines:
+
+* its own event listeners
+* its own connection lifecycle
+* its own authorization logic
+* its own broadcast operations
+
+***
+
+### Public Namespace Example (`/chat`)
+
+The `/chat` namespace is open and allows general messaging without authentication.
+
+#### Server
+
+```java
+Configuration config = new Configuration();
+config.setPort(9092);
+
+SocketIOServer server = new SocketIOServer(config);
+Namespace chat = server.addNamespace("/chat");
+
+// new client connection
+chat.addConnectListener(client -> {
+    System.out.println("[/chat] connected -> " + client.getSessionId());
+});
+
+// message event
+chat.addEventListener("message", String.class, (client, data, ack) -> {
+    // broadcast to all clients in /chat
+    chat.getBroadcastOperations().sendEvent("message", data);
+});
+
+server.start();
+```
+
+#### Client
+
+```javascript
+const chat = io("http://localhost:9092/chat");
+
+chat.on("connect", () => console.log("connected to /chat"));
+chat.emit("message", "hello everyone");
+```
+
+***
+
+### Authenticated Namespace Example (`/auth`)
+
+The `/auth` namespace restricts access using authorization logic executed during connection.
+
+#### Server
+
+```java
+Configuration config = new Configuration();
+config.setPort(9092);
+
+SocketIOServer server = new SocketIOServer(config);
+Namespace admin = server.addNamespace("/auth");
+
+// verify token on namespace connect
+admin.setAuthorizationListener(data -> {
+    String token = data.getSingleUrlParam("token");
+    return "secret123".equals(token);
+});
+
+// privileged alert event
+admin.addEventListener("alert", String.class, (client, data, ack) -> {
+    admin.getBroadcastOperations().sendEvent("alert", data);
+});
+
+server.start();
+```
+
+#### Authorized Client
+
+```javascript
+const auth = io("http://localhost:9092/auth", {
+    query: { token: "secret123" }
+});
+
+admin.emit("alert", "restart service");
+```
+
+#### Unauthorized Client
+
+```javascript
+io("http://localhost:9092/auth", {
+    query: { token: "invalid" }
+});
+```
+
+Expected server output:
+
+```
+[/auth] authorization failed -> connection rejected
+```
+
+***
