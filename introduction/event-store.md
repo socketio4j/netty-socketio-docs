@@ -5,58 +5,53 @@ You don’t need to deal with the internals of `Store` or `EventStore`.\
 Their implementations are fully abstracted — you **only choose and control behavior through `StoreFactory`configuration**.
 {% endhint %}
 
-The **EventStore** interface defines the abstraction for socketio4j’s _distributed event synchronization layer_. It provides a uniform API for publishing, subscribing, and propagating socketio4j internal events such as room joins, leaves, acknowledgements, and node-to-node synchronization messages across one or more server instances.
-
-Concrete implementations (Kafka, Redis Streams, Hazelcast, NATS, etc.) supply transport-specific behavior, while the interface standardizes event flow, error handling, and lifecycle semantics.
+The **EventStore** interface defines socketio4j’s distributed event synchronization layer.\
+It provides a unified abstraction for publishing and subscribing to internal events — such as room joins, leaves, acknowledgements, session changes, and node-to-node synchronization — across one or more server instances.
 
 **Key characteristics**
 
-* **Unified event API** — consistent publish/subscribe model for all backends
-* **Typed event dispatch** — listeners receive strongly typed `EventMessage` objects
-* **Node-aware filtering** — implementations typically ignore self-originating messages using `nodeId`
-* **Pluggable backends** — supports streaming systems, pub/sub, or in-memory fallback
-* **Lifecycle management** — publish, subscribe, unsubscribe, and shutdown operations are standardized
+* **Unified event API** — same publish/subscribe model for all backends
+* **Typed dispatch** — listeners receive strongly typed `EventMessage` objects
+* **Node-aware filtering** — implementations typically ignore self-originated events via `nodeId`
+* **Pluggable transports** — Kafka, Redis Streams, Hazelcast, NATS, in-memory fallback, etc.
+* **Lifecycle control** — standardized `publish`, `subscribe`, `unsubscribe`, `shutdown`
 
 **How it works**
 
-* `publish` wraps backend publishing and ensures errors are logged and propagated
-* `subscribe` registers event listeners for a given event type
-* `unsubscribe` deregisters listeners and cleans up backend state
-* `shutdown` terminates backend resources and closes connections where applicable
-* Implementations supply the actual logic through `publish0`, `subscribe0`, `unsubscribe0`, and `shutdown0`
+* `publish` → backend-specific send via `publish0`
+* `subscribe` → register event listener via `subscribe0`
+* `unsubscribe` → remove listener and cleanup via `unsubscribe0`
+* `shutdown` → release backend resources via `shutdown0`
+* Implementations supply transport behavior through the `*0` methods; the interface standardizes flow and error handling
 
-**Event routing models**
+**Event routing properties**
 
-PropertyMeaning
+| Property           | Meaning                                                                          |
+| ------------------ | -------------------------------------------------------------------------------- |
+| **EventStoreMode** | `MULTI_CHANNEL` (per-event streams/topics) or `SINGLE_CHANNEL` (unified channel) |
+| **EventStoreType** | Declares transport family: `STREAM`, `PUBSUB`, `LOCAL`, etc.                     |
+| **PublishMode**    | Describes expected reliability: `RELIABLE` or `UNRELIABLE`                       |
+| **nodeId**         | Identifies the node; used to avoid reprocessing local events                     |
 
-`EventStoreMode`
-
-Determines whether events are multiplexed (`MULTI_CHANNEL`) or unified (`SINGLE_CHANNEL`)
-
-`EventStoreType`
-
-Identifies transport family (`STREAM`, `PUBSUB`, `LOCAL`, etc.)
-
-`PublishMode`
-
-Abstracts reliability: `RELIABLE` or `UNRELIABLE` depending on backend guarantees
-
-`nodeId`
-
-Uniquely identifies a node; used to avoid delivering locally-originated events twice
-
-> **Note:** `getNodeId()` generates a random node ID by default. Distributed setups should override it to provide a stable node identity.
+> **Note:** `getNodeId()` provides a random ID by default.\
+> For distributed deployments, configure a **stable node identity** via `StoreFactory`.
 
 **Advantages**
 
-👍 Abstract interface unifies multiple event backends 👍 Enables drop-in replacement of distributed transports 👍 Centralized error logging and failure transparency 👍 Clear extension points for custom event stores
+👍 Swap distributed transports without code changes\
+👍 Centralized error logging and flow semantics\
+👍 Clear extension hooks for custom backends\
+👍 Abstracts away transport differences
 
 **Limitations**
 
-❌ Does not enforce delivery semantics — guarantees depend on implementation ❌ No built-in persistence, ordering, or deduplication — handled per backend ❌ Local filtering behavior (`nodeId`) must be respected by stores to avoid duplication
+❌ Delivery guarantees depend on implementation — not enforced by the interface\
+❌ Persistence, ordering, deduplication are backend responsibilities\
+❌ `nodeId`-based local filtering must be respected to avoid duplicates
 
 ***
 
-**Delivery Guarantees**
+#### Delivery Guarantees
 
-> **The EventStore interface does not define reliability or ordering semantics.** **Delivery guarantees depend entirely on the concrete implementation.**
+> The **EventStore interface does not define delivery guarantees**.\
+> Reliability, replay, and ordering depend entirely on the chosen backend (e.g., Redis Streams = at-least-once; Redis Pub/Sub = best-effort; Kafka = at-least-once; Memory = local only).
