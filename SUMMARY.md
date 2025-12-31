@@ -1,6 +1,12 @@
 # Table of contents
 
-* [Introduction](README.md)
+## Group 1
+
+* [Page 1](README.md)
+
+***
+
+* [Introduction](<README (1).md>)
 
 ## Store
 
