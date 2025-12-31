@@ -1,5 +1,10 @@
 # Store
 
+{% hint style="info" %}
+You don’t need to deal with the internals of `Store` or `EventStore`.\
+Their implementations are fully abstracted — you **only choose and control behavior through `StoreFactory`configuration**.
+{% endhint %}
+
 The **Store** interface defines a per-session key-value storage abstraction for socketio4j.\
 It allows transports, namespaces, and user code to persist small pieces of session-scoped metadata such as user IDs, authentication tokens, connection state, or room membership hints—independent of the actual backing storage implementation.
 
