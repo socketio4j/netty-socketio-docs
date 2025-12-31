@@ -21,23 +21,45 @@ metaLinks:
 
 # Redis Stream
 
-GitBook supports many different types of content, and is backed by Markdown — meaning you can copy and paste any existing Markdown files directly into the editor!
+The **RedisStreamEventStore** provides a distributed, streaming event store for socketio4j using **Redis Streams (XADD / XREAD)**.\
+It enables horizontal scaling by synchronizing events across multiple server instances so that internal state, room membership, and other distributed operations remain consistent across nodes.
 
-<figure><img src="https://gitbookio.github.io/onboarding-template-images/markdown-hero.png" alt=""><figcaption></figcaption></figure>
+**Key characteristics**
 
-Feel free to test it out and copy the Markdown below by hovering over the code block in the upper right, and pasting into a new line underneath.
+* **Distributed streaming** — uses Redis Streams to deliver events to all active nodes
+* **Event replay continuity** — stores recent events in stream history, allowing controlled replay
+* **Offset tracking per-event-type** — each event type maintains its own last-seen `StreamMessageId`
+* **Streaming dispatch** — events processed asynchronously without blocking Netty event loops
+* **Duplicate prevention** — events produced by the same node are filtered with `nodeId`
 
-```markdown
-# Heading
+**How it works**
 
-This is some paragraph text, with a [link](https://docs.gitbook.com) to our docs. 
+* Every publish performs `XADD` to a Redis stream (single or per-type depending on mode)
+* Each event type maintains its own read offset using `StreamMessageId`
+* Polling is performed in dedicated scheduled executor threads per event type
+* For each read (`XREAD`), only messages with offsets newer than the last processed id are handled
+* Events are delivered to listeners only if they **came from another node**
+* On errors or stream timeouts, retries are scheduled automatically
 
-## Heading 2
-- Point 1
-- Point 2
-- Point 3
-```
+**Modes**
 
-{% hint style="info" %}
-If you have multiple files, GitBook makes it easy to import full repositories too — allowing you to keep your GitBook content in sync.
-{% endhint %}
+| Mode             | Behavior                                 | When to use                                                      |
+| ---------------- | ---------------------------------------- | ---------------------------------------------------------------- |
+| `MULTI_CHANNEL`  | Separate Redis stream per event type     | Default; isolates event traffic and reduces contention           |
+| `SINGLE_CHANNEL` | All events fed into `ALL_SINGLE_CHANNEL` | When global ordering of all event types is required across nodes |
+
+**Advantages**
+
+👍 Works well for multi-node deployments\
+👍 Messages can survive temporary subscriber downtime depending on stream length\
+👍 Provides **offset-based delivery**\
+👍 Supports controlled replay of new events after restarts (connection state recovery feature is in development, for now you will the get the message offset)\
+👍 Uses core Redis Streams primitives without external brokers
+
+**Limitations**
+
+❌ Consumers process messages independently — ordering is per-stream, not global\
+❌ Potential duplicate delivery on restarts or offset boundary races\
+❌ Requires Redis Streams support (not compatible with legacy Redis Pub/Sub mode)
+
+> **Delivery guarantee:** _At-least-once semantics — event listeners must be idempotent to handle possible duplicate messages._
