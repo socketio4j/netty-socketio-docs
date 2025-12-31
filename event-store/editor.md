@@ -21,34 +21,43 @@ metaLinks:
 
 # Redis Pub/Sub
 
-GitBook has a powerful block-based editor that allows you to seamlessly create, update, and enhance your content.
+The **RedissonEventStore** provides an event store for socketio4j using **Redis Pub/Sub**.\
+It enables basic event forwarding between server instances by broadcasting messages across Redis channels, allowing distributed room operations and internal synchronization — but without durability or replay guarantees.
 
-<figure><img src="https://gitbookio.github.io/onboarding-template-images/editor-hero.png" alt=""><figcaption></figcaption></figure>
+**Key characteristics**
 
-### Writing content
+* **Ephemeral broadcast messaging** — events are delivered only to currently connected subscribers
+* **Async listener callbacks** — Redis Pub/Sub dispatch runs outside Netty event loops
+* **Lightweight multi-node sync** — minimal configuration when Redis is already present
+* **Subject-per-event routing** — event types map directly to Pub/Sub channels
+* **Duplicate prevention** — filters events originating from the same node (`nodeId`)
 
-GitBook offers a range of block types for you to add to your content inline — from simple text and tables, to code blocks and more. These elements will make your pages more useful to readers, and offer extra information and context.
+**How it works**
 
-Either start typing below, or press `/` to see a list of the blocks you can insert into your page.
+* `publish0` sends the event to a Redis Pub/Sub channel based on the event type
+* `subscribe0` registers a type-safe listener on the corresponding channel
+* Delivery is **push-only** — subscribers must be online to receive messages
+* On unsubscribe or shutdown, topic listeners are removed but Redis clients remain open
 
-### Add a new block
+**Modes**
 
-{% stepper %}
-{% step %}
-#### Open the insert block menu
+| Mode             | Behavior                                   | When to use                                      |
+| ---------------- | ------------------------------------------ | ------------------------------------------------ |
+| `MULTI_CHANNEL`  | Each event maps to its own Pub/Sub channel | Default; reduces event cross-talk                |
+| `SINGLE_CHANNEL` | All events routed to `ALL_SINGLE_CHANNEL`  | When full ordering of all event types is desired |
 
-Press `/` on your keyboard to open the insert block menu.
-{% endstep %}
+**Advantages**
 
-{% step %}
-#### Search for the block you need
+👍 Extremely simple to configure\
+👍 Zero persistence overhead — pure broadcast semantics\
+👍 Ideal for Redis-centric deployments or prototypes\
+👍 Works out-of-the-box for basic multi-node communication
 
-Try searching for “Stepper”, for exampe, to insert the stepper block.
-{% endstep %}
+**Limitations**
 
-{% step %}
-#### Insert and edit your block
+❌ Events are **not persisted** — subscribers miss events while disconnected\
+❌ No replay mechanism — reconnecting nodes start from “now”\
+❌ Duplicate messages possible during reconnection\
+❌ Ordering only applies per-channel; global ordering requires `SINGLE_CHANNEL` mode
 
-Click or press Enter to insert your block. From here, you’ll be able to edit it as needed.
-{% endstep %}
-{% endstepper %}
+> **Delivery guarantee:** At-most-once semantics. _Best-effort, ephemeral delivery — listeners must tolerate message loss and out-of-order delivery._
