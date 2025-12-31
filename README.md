@@ -1,7 +1,5 @@
 # Store
 
-### Store <a href="#store" id="store"></a>
-
 The **Store** interface defines a per-session key-value storage abstraction for socketio4j. It allows transports, namespaces, and user code to persist small pieces of session-scoped metadata such as user IDs, authentication tokens, connection state, or room membership hints—independent of the actual backing storage implementation.
 
 **Key characteristics**
