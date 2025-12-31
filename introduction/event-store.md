@@ -1,5 +1,10 @@
 # Event Store
 
+{% hint style="info" %}
+You don’t need to deal with the internals of `Store` or `EventStore`.\
+Their implementations are fully abstracted — you **only choose and control behavior through `StoreFactory`configuration**.
+{% endhint %}
+
 The **EventStore** interface defines the abstraction for socketio4j’s _distributed event synchronization layer_. It provides a uniform API for publishing, subscribing, and propagating socketio4j internal events such as room joins, leaves, acknowledgements, and node-to-node synchronization messages across one or more server instances.
 
 Concrete implementations (Kafka, Redis Streams, Hazelcast, NATS, etc.) supply transport-specific behavior, while the interface standardizes event flow, error handling, and lifecycle semantics.
