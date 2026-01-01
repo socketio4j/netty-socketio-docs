@@ -22,7 +22,7 @@ metaLinks:
 
 # Redis Store
 
-The **RedissonStore** is a Redis-backed implementation of the `Store` interface that provides _per-session, distributed key–value storage_ using Redisson’s `RMap`.\
+The **RedisStore** is a Redis-backed implementation of the `Store` interface that provides _per-session, distributed key–value storage_ using Redisson’s `RMap`.\
 Each connected client receives a dedicated Redis map identified by its `sessionId`, allowing session data to be accessed consistently across multiple nodes in a clustered environment.
 
 **Key characteristics**
@@ -60,6 +60,6 @@ Each connected client receives a dedicated Redis map identified by its `sessionI
 
 #### Summary
 
-> **RedissonStore provides distributed, per-session storage backed by Redis,**\
+> **RedisStore provides distributed, per-session storage backed by Redis,**\
 > **making session data visible and persistent across multiple socketio4j nodes.**\
 > **Ideal for clustered deployments when session state must be shared.**
