@@ -21,6 +21,10 @@ metaLinks:
 
 # Redis Pub/Sub
 
+{% hint style="info" %}
+SocketIO4J uses the Redisson client to connect to a Redis server. Alternative Redis-compatible backends such as Valkey and DragonflyDB may also be supported.
+{% endhint %}
+
 The **RedissonPubSubEventStore** provides an event store for socketio4j using **Redis Pub/Sub**.\
 It enables basic event forwarding between server instances by broadcasting messages across Redis channels, allowing distributed room operations and internal synchronization — but without durability or replay guarantees.
 
