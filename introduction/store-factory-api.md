@@ -62,7 +62,7 @@ StoreFactory sf = new HazelcastStoreFactory(hz, es);
 
 #### `RedissonStoreFactory(RedissonClient redissonClient)`
 
-Creates a factory using **Redis storage** and the default **RedissonEventStore** (Redis Pub/Sub).
+Creates a factory using **Redis storage** and the default **RedissonPubSubEventStore** (Redis Pub/Sub).
 
 ```java
 RedissonClient redis = Redisson.create();
