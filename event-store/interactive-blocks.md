@@ -21,7 +21,7 @@ metaLinks:
 
 # Hazelcast Ring Buffer
 
-The **HazelcastRingBufferEventStore** provides a distributed event store for socketio4j using **Hazelcast ReliableTopic / RingBuffer**.\
+The **HazelcastPubSubRingBufferEventStore** provides a distributed event store for socketio4j using **Hazelcast ReliableTopic / RingBuffer**.\
 It enables horizontal scaling by broadcasting events across cluster nodes so that state changes, joins, leaves, acknowledgements, and other internal events are synchronized across multiple servers.
 
 **Key characteristics**
