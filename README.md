@@ -1,23 +1,319 @@
 ---
-icon: webhook
+icon: gear
 ---
 
-# API docs
+# Server Configuration
 
-Please check the clients and API docs for reference
+## Minimal Example
+
+```java
+Configuration config = new Configuration();
+config.setHostname("127.0.0.1");
+config.setPort(9092);
+config.setContext("/socket.io");
+config.setTransports(Transport.POLLING, Transport.WEBSOCKET);
+config.setStoreFactory(new RedisStoreFactory(redissonClient));
+```
+
+{% hint style="info" %}
+Defaults work for most use cases; additional overrides are listed below.
+{% endhint %}
 
 {% hint style="warning" %}
-**Warning:** Use client versions compatible with **Socket.IO Server v4**. Previous versions **may not be supported and may not work** correctly
+For connection auth check [here](./#authorization).
 {% endhint %}
 
-<table><thead><tr><th width="254.92578125">Language</th><th>Website</th></tr></thead><tbody><tr><td>JavaScript (browser, Node.js or React Native)</td><td>- <a href="https://socket.io/docs/v4/client-installation/">Installation steps</a><br>- <a href="https://socket.io/docs/v4/client-api/">API</a><br>- <a href="https://github.com/socketio/socket.io-client">Source code</a></td></tr><tr><td>JavaScript (for WeChat Mini-Programs)</td><td><a href="https://github.com/weapp-socketio/weapp.socket.io">https://github.com/weapp-socketio/weapp.socket.io</a></td></tr><tr><td>Java</td><td><a href="https://github.com/socketio/socket.io-client-java">https://github.com/socketio/socket.io-client-java</a></td></tr><tr><td>C++</td><td><a href="https://github.com/socketio/socket.io-client-cpp">https://github.com/socketio/socket.io-client-cpp</a></td></tr><tr><td>Swift</td><td><a href="https://github.com/socketio/socket.io-client-swift">https://github.com/socketio/socket.io-client-swift</a></td></tr><tr><td>Dart</td><td><a href="https://github.com/rikulo/socket.io-client-dart">https://github.com/rikulo/socket.io-client-dart</a></td></tr><tr><td>Python</td><td><a href="https://github.com/miguelgrinberg/python-socketio">https://github.com/miguelgrinberg/python-socketio</a></td></tr><tr><td>.Net</td><td><a href="https://github.com/doghappy/socket.io-client-csharp">https://github.com/doghappy/socket.io-client-csharp</a></td></tr><tr><td>Rust</td><td><a href="https://github.com/1c3t3a/rust-socketio">https://github.com/1c3t3a/rust-socketio</a></td></tr><tr><td>Kotlin</td><td><a href="https://github.com/icerockdev/moko-socket-io">https://github.com/icerockdev/moko-socket-io</a></td></tr><tr><td>PHP</td><td><a href="https://github.com/ElephantIO/elephant.io">https://github.com/ElephantIO/elephant.io</a></td></tr><tr><td>Golang</td><td><a href="https://github.com/maldikhan/go.socket.io">https://github.com/maldikhan/go.socket.io</a></td></tr></tbody></table>
+## Network & Binding
 
-{% hint style="danger" %}
-Not all client-side APIs may be available in the server implementation, and vice versa.
+| Property   | Type     | Default      | Description                                        |
+| ---------- | -------- | ------------ | -------------------------------------------------- |
+| `hostname` | `String` | `null`       | Bind address. If unset, binds to `0.0.0.0` / `::0` |
+| `port`     | `int`    | `-1`         | Server port (must be set)                          |
+| `context`  | `String` | `/socket.io` | Socket.IO context path                             |
+
+```java
+config.setHostname("0.0.0.0");
+config.setPort(9092);
+config.setContext("/socket.io");
+```
+
+
+
+***
+
+## Threading Model
+
+| Property        | Type  | Default | Notes                          |
+| --------------- | ----- | ------- | ------------------------------ |
+| `bossThreads`   | `int` | `0`     | `CPU * 2 when value sets to 0` |
+| `workerThreads` | `int` | `0`     | `CPU * 2 when value sets to 0` |
+
+```java
+config.setBossThreads(2);
+config.setWorkerThreads(16);
+```
+
+{% hint style="info" %}
+**Boss vs Worker threads**\
+Boss threads accept connections; worker threads handle all I/O.\
+Add boss threads **only** to increase **connection accept rate**; use **1 for most cases**.\
+Scale worker threads for throughput—too many cause context switching.
 {% endhint %}
 
-## Compatibility Matrix
+
+
+***
+
+## Transport Configuration
+
+| Property         | Type              | Default              | Description                                            |
+| ---------------- | ----------------- | -------------------- | ------------------------------------------------------ |
+| `transports`     | `List<Transport>` | `WEBSOCKET, POLLING` | Enabled transports                                     |
+| `transportType`  | `TransportType`   | `AUTO`               | Native IO selection (EPOLL / KQUEUE / IO\_URING / NIO) |
+| `upgradeTimeout` | `int (ms)`        | `10000`              | Polling → WebSocket upgrade timeout                    |
+
+```java
+config.setTransports(Transport.WEBSOCKET);
+config.setTransportType(TransportType.EPOLL);
+```
+
+{% hint style="info" %}
+**In AUTO transport mode,** socketio4j automatically selects the best available transport at startup in the following order: **IO\_URING → EPOLL → KQUEUE → NIO**.
+
+If the selected transport is not available on the current platform, socketio4j **safely falls back to NIO** without failing startup.
+{% endhint %}
 
 
 
-<table><thead><tr><th width="149.796875" align="center" valign="middle">Client API</th><th width="147.515625" align="center">Netty‑SocketIO Support</th><th width="305.6953125" align="center">JavaScript Client</th><th width="347.96484375" align="center">Java Client</th><th width="361.54296875" align="center">Python Client</th><th width="291.40234375" align="center">C++ Client</th><th width="279.4375" align="center">Swift Client</th><th width="289.234375" align="center">Dart/Flutter Client</th><th width="266.38671875" align="center">.NET Client</th><th width="300.39453125" align="center">PHP Client</th><th width="273.578125" align="center">Go Client</th><th width="311.2578125" align="center">Notes</th></tr></thead><tbody><tr><td align="center" valign="middle"><strong>Connect</strong></td><td align="center">✅ Yes</td><td align="center"><code>io(url, opts)</code></td><td align="center"><code>IO.socket(url)</code></td><td align="center"><code>sio.connect(url)</code></td><td align="center"><code>socket.connect()</code></td><td align="center"><code>socket.connect()</code></td><td align="center"><code>socket.connect()</code></td><td align="center"><code>socket.Connect()</code></td><td align="center"><code>client->Connect()</code></td><td align="center"><code>socket.Connect()</code></td><td align="center">Standard connect method </td></tr><tr><td align="center" valign="middle"><strong>Disconnect</strong></td><td align="center">✅ Yes</td><td align="center"><code>socket.disconnect()</code></td><td align="center"><code>socket.disconnect()</code></td><td align="center"><code>sio.disconnect()</code></td><td align="center"><code>socket.disconnect()</code></td><td align="center"><code>socket.disconnect()</code></td><td align="center"><code>socket.disconnect()</code></td><td align="center"><code>socket.Disconnect()</code></td><td align="center"><code>client->Disconnect()</code></td><td align="center"><code>socket.Disconnect()</code></td><td align="center">Client disconnects from server</td></tr><tr><td align="center" valign="middle"><strong>Event listen</strong></td><td align="center">✅ Yes</td><td align="center"><code>socket.on(event, cb)</code></td><td align="center"><code>socket.on(EVENT, listener)</code></td><td align="center"><code>@sio.on(event)</code></td><td align="center"><code>socket.on(event, cb)</code></td><td align="center"><code>socket.on(event, cb)</code></td><td align="center"><code>socket.on(event, cb)</code></td><td align="center"><code>socket.On(event, cb)</code></td><td align="center"><code>client->On(event, cb)</code></td><td align="center"><code>socket.On(event, cb)</code></td><td align="center">Standard event handler</td></tr><tr><td align="center" valign="middle"><strong>One‑time listener</strong></td><td align="center">✅ Yes</td><td align="center"><code>socket.once(event, cb)</code></td><td align="center"><code>socket.once(EVENT, listener)</code></td><td align="center"><code>@sio.once(event)</code> </td><td align="center"><code>socket.once(event, cb)</code></td><td align="center"><code>socket.once(event, cb)</code></td><td align="center"><code>socket.once(event, cb)</code></td><td align="center"><code>socket.Once(event, cb)</code></td><td align="center"><code>client->Once(event, cb)</code></td><td align="center"><code>socket.Once(event, cb)</code></td><td align="center">Some clients don’t have built‑in once</td></tr><tr><td align="center" valign="middle"><strong>Remove listener</strong></td><td align="center">✅ Yes</td><td align="center"><code>socket.off()</code> / <code>socket.removeListener()</code></td><td align="center"><code>socket.off(EVENT)</code></td><td align="center"><code>sio.off(event)</code> </td><td align="center"><code>socket.off(event)</code></td><td align="center"><code>socket.off(event)</code></td><td align="center"><code>socket.off(event)</code></td><td align="center"><code>socket.Off(event)</code></td><td align="center"><code>client->Off(event)</code></td><td align="center"><code>socket.Off(event)</code></td><td align="center">Most clients support listener removal cycles</td></tr><tr><td align="center" valign="middle"><strong>Emit event</strong></td><td align="center">✅ Yes</td><td align="center"><code>socket.emit(event, …args)</code></td><td align="center"><code>socket.emit(event, …args)</code></td><td align="center"><code>sio.emit(event, data)</code> </td><td align="center"><code>socket.emit(event, data)</code></td><td align="center"><code>socket.emit(event, data)</code></td><td align="center"><code>socket.emit(event, data)</code></td><td align="center"><code>socket.Emit(event, data)</code></td><td align="center"><code>client->Emit(event, data)</code></td><td align="center"><code>socket.Emit(event, data)</code></td><td align="center">Standard emit</td></tr><tr><td align="center" valign="middle"><strong>Emit with ack</strong></td><td align="center">✅ Yes</td><td align="center"><code>socket.emit(event, …, callback)</code> / <code>emitWithAck()</code></td><td align="center"><code>socket.emit(event, …args, AckCallback)</code></td><td align="center"><code>sio.call(event, data)</code> / <code>await sio.emit(event, data, callback)</code> </td><td align="center"><code>socket.emit(event, data, cb)</code></td><td align="center"><code>socket.emit(event, data, cb)</code></td><td align="center"><code>socket.emit(event, data, cb)</code></td><td align="center"><code>socket.Emit(event, data, cb)</code></td><td align="center"><code>client->Emit(event, data, cb)</code></td><td align="center"><code>socket.Emit(event, data, cb)</code></td><td align="center">Ack support varies</td></tr><tr><td align="center" valign="middle"><strong>Namespace API</strong></td><td align="center">✅ Yes</td><td align="center"><code>io(url/ns)</code> / <code>socket.nsp</code></td><td align="center"><code>socket.of("/ns")</code></td><td align="center"><code>sio.connect(url, namespaces=["/ns"])</code> </td><td align="center"><code>socket.of("/ns")</code></td><td align="center"><code>socket.of("/ns")</code></td><td align="center"><code>socket.of("/ns")</code></td><td align="center"><code>socket.Of("/ns")</code></td><td align="center"><code>client->Of("/ns")</code></td><td align="center"><code>socket.Of("/ns")</code></td><td align="center">Most multi‑namespace clients support</td></tr><tr><td align="center" valign="middle"><strong>Query / Auth</strong></td><td align="center">⚠️ Limited</td><td align="center"><code>io(url, { auth, query })</code></td><td align="center"><code>IO.Options.query</code>/<code>setAuth(Map&#x3C;String,Object>)</code></td><td align="center"><code>sio.connect(url, auth={…})</code> </td><td align="center"><code>socket.setAuth(data)</code></td><td align="center"><code>socket.setAuth(data)</code></td><td align="center"><code>socket.setAuth(data)</code></td><td align="center"><code>socket.SetAuth(data)</code></td><td align="center"><code>client->SetAuth(data)</code></td><td align="center"><code>socket.SetAuth(data)</code></td><td align="center">Handshake params pass through</td></tr><tr><td align="center" valign="middle"><strong>Reconnection control</strong></td><td align="center">⚠️ Partial</td><td align="center">Managed by client options</td><td align="center"><code>socket.io().reconnection(true/false)</code></td><td align="center"><code>sio.reconnect()</code> or handled by <code>sio.connect()</code></td><td align="center">Client library dependent</td><td align="center">Client library dependent</td><td align="center">Client library dependent</td><td align="center">Client library dependent</td><td align="center">Client library dependent</td><td align="center">Client library dependent</td><td align="center">Auto reconnect logic client</td></tr><tr><td align="center" valign="middle"><strong>Volatile emit</strong></td><td align="center">⚠️ Limited</td><td align="center"><code>socket.volatile.emit()</code></td><td align="center">JS-only / no standard in Java client</td><td align="center">⚠️ Rare / not standard</td><td align="center">Varies</td><td align="center">Varies</td><td align="center">Varies</td><td align="center">Varies</td><td align="center">Varies</td><td align="center">Varies</td><td align="center">Not consistently implemented</td></tr><tr><td align="center" valign="middle"><strong>Compression flags</strong></td><td align="center">⚠️ Internal</td><td align="center"><code>socket.compress()</code></td><td align="center">Not standard</td><td align="center">Not standard</td><td align="center">Not standard</td><td align="center">Varies</td><td align="center">Varies</td><td align="center">Varies</td><td align="center">Varies</td><td align="center">Varies</td><td align="center">Usually internal</td></tr><tr><td align="center" valign="middle"><strong>Client middleware (<code>use()</code>)</strong></td><td align="center">❌ No</td><td align="center">JS only</td><td align="center">❌</td><td align="center">❌</td><td align="center">❌</td><td align="center">❌</td><td align="center">❌</td><td align="center">❌</td><td align="center">❌</td><td align="center">❌</td><td align="center">Middleware API largely JS only</td></tr><tr><td align="center" valign="middle"><strong>Engine/Manager internals</strong></td><td align="center">❌ No</td><td align="center"><code>socket.io</code> / Manager</td><td align="center">Internal</td><td align="center">Internal</td><td align="center">Internal</td><td align="center">Internal</td><td align="center">Internal</td><td align="center">Internal</td><td align="center">Internal</td><td align="center">Internal</td><td align="center">Client internals not mirrored on server</td></tr></tbody></table>
+***
+
+## Heartbeat & Timeouts
+
+| Property           | Default    | Description                     |
+| ------------------ | ---------- | ------------------------------- |
+| `pingInterval`     | `25000 ms` | Ping interval                   |
+| `pingTimeout`      | `60000 ms` | Ping timeout (`0` disables)     |
+| `firstDataTimeout` | `5000 ms`  | Prevents silent channel attacks |
+
+> ℹ️ **Ping interval vs ping timeout**\
+> &#xNAN;**`pingInterval`** defines how often the server sends heartbeat pings to keep the connection alive (NAT keep-alive).\
+> &#xNAN;**`pingTimeout`** defines how long the server waits **without a pong** before considering the client disconnected.
+>
+> In short:\
+> **interval = how often to check**,\
+> **timeout = how long to wait before giving up**.
+
+```java
+config.setPingInterval(20000);
+config.setPingTimeout(60000);
+config.setFirstDataTimeout(5000);
+```
+
+{% hint style="info" %}
+**NAT timeout & keep-alive hint**\
+`pingInterval` must be **shorter than typical NAT idle timeouts** (usually 30–60s) to keep connections alive behind routers and mobile networks.
+
+Lower values improve NAT survivability and faster dead-peer detection, but **increase network and CPU overhead**.\
+Higher values reduce overhead, but risk **silent disconnects** on NATs and load balancers.
+{% endhint %}
+
+
+
+***
+
+## Payload & Frame Limits
+
+| Property                | Default | Description              |
+| ----------------------- | ------- | ------------------------ |
+| `maxHttpContentLength`  | `64 KB` | Max HTTP request size    |
+| `maxFramePayloadLength` | `64 KB` | Max WebSocket frame size |
+
+```java
+config.setMaxHttpContentLength(256 * 1024);
+config.setMaxFramePayloadLength(256 * 1024);
+```
+
+
+
+***
+
+## CORS & HTTP Behavior
+
+| Property              | Default | Description                    |
+| --------------------- | ------- | ------------------------------ |
+| `enableCors`          | `true`  | Enable CORS                    |
+| `origin`              | `null`  | `Access-Control-Allow-Origin`  |
+| `allowHeaders`        | `null`  | `Access-Control-Allow-Headers` |
+| `addVersionHeader`    | `true`  | Adds `Server` header           |
+| `allowCustomRequests` | `false` | Allow non-Socket.IO requests   |
+
+```java
+config.setEnableCors(true);
+config.setOrigin("https://example.com");
+config.setAllowHeaders("Authorization,Content-Type");
+```
+
+
+
+***
+
+## Compression
+
+| Property               | Default | Description          |
+| ---------------------- | ------- | -------------------- |
+| `httpCompression`      | `true`  | GZIP / Deflate       |
+| `websocketCompression` | `true`  | `permessage-deflate` |
+
+```java
+config.setHttpCompression(true);
+config.setWebsocketCompression(true);
+```
+
+
+
+***
+
+## Buffer & ACK Handling
+
+| Property             | Default             | Description              |
+| -------------------- | ------------------- | ------------------------ |
+| `preferDirectBuffer` | `true`              | Use Netty direct buffers |
+| `ackMode`            | `AUTO_SUCCESS_ONLY` | Auto-ACK behavior        |
+
+```java
+config.setPreferDirectBuffer(true);
+config.setAckMode(AckMode.AUTO);
+```
+
+{% hint style="info" %}
+**Ack behavior**
+
+* Acks are sent **at most once** and **only if requested**
+* **Manual ack** always suppresses auto-ack
+* **`AUTO`** → always auto-acknowledges with `[]` (even on exception)
+* **`AUTO_SUCCESS_ONLY`** → auto-acknowledges with `[]` **only on success**
+* **`MANUAL`** → developer is fully responsible for sending the ack
+{% endhint %}
+
+
+
+***
+
+## Session & Security
+
+| Property         | Default | Description               |
+| ---------------- | ------- | ------------------------- |
+| `randomSession`  | `false` | Randomize session IDs     |
+| `needClientAuth` | `false` | TLS client authentication |
+
+```java
+config.setRandomSession(true);
+config.setNeedClientAuth(true);
+```
+
+
+
+***
+
+## JSON Serialization
+
+| Property      | Default       | Description              |
+| ------------- | ------------- | ------------------------ |
+| `jsonSupport` | Auto-detected | Jackson-based by default |
+
+```java
+config.setJsonSupport(new JacksonJsonSupport());
+```
+
+
+
+***
+
+## Authorization
+
+| Property                | Default   | Description             |
+| ----------------------- | --------- | ----------------------- |
+| `authorizationListener` | Allow all | Handshake authorization |
+
+```java
+config.setAuthorizationListener(data -> {
+    return AuthorizationResult.SUCCESS;
+});
+```
+
+
+
+***
+
+## Exception Handling
+
+| Property            | Default                    | Description           |
+| ------------------- | -------------------------- | --------------------- |
+| `exceptionListener` | `DefaultExceptionListener` | Global exception hook |
+
+```java
+config.setExceptionListener(new ExceptionListener() {
+    @Override
+    public void onEventException(Exception e, Object... args) {
+        log.error("Socket.IO error", e);
+    }
+});
+```
+
+
+
+***
+
+## Store / Clustering
+
+```java
+config.setStoreFactory(new RedisStoreFactory(redissonClient));
+```
+
+{% hint style="info" %}
+Please check [Adapters](https://app.gitbook.com/o/shMwc485bv7qtDWf0s0D/s/vM0fEesNQnh9fdpchiWm/) Page for detailed explanation.
+{% endhint %}
+
+
+
+***
+
+## SSL / TLS
+
+```java
+SocketSslConfig ssl = new SocketSslConfig();
+ssl.setKeyStore("keystore.jks");
+ssl.setKeyStorePassword("changeit");
+/**
+//only uses when mTLS/zero-trust scenarios not usually for wss
+ssl.setTrustStore("truststore.jks");
+ssl.setTrustStorePassword("changeit");
+*/
+config.setSocketSslConfig(ssl);
+```
+
+
+
+***
+
+## HTTP Decoder Tuning
+
+| Property               | Default       |
+| ---------------------- | ------------- |
+| `maxInitialLineLength` | Netty default |
+| `maxHeaderSize`        | Netty default |
+| `maxChunkSize`         | Netty default |
+
+```java
+HttpRequestDecoderConfiguration http = new HttpRequestDecoderConfiguration();
+http.setMaxHeaderSize(16 * 1024);
+config.setHttpRequestDecoderConfiguration(http);
+```
+
+
+
+***
+
+{% hint style="info" %}
+📌 Tip: Configuration is cloned internally for immutability. Treat it as write-once before server start.
+{% endhint %}
