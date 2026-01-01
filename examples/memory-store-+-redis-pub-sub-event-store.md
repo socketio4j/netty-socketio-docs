@@ -4,7 +4,7 @@
 import com.socketio4j.socketio.Configuration;
 import com.socketio4j.socketio.SocketIOServer;
 import com.socketio4j.socketio.store.memory.MemoryStoreFactory;
-import com.socketio4j.socketio.store.redis_pubsub.RedissonPubSubEventStore;
+import com.socketio4j.socketio.store.redis_pubsub.RedisPubSubEventStore;
 
 import org.redisson.Redisson;
 import org.redisson.api.RedissonClient;
@@ -23,8 +23,8 @@ public class Application {
         RedissonClient redisson = Redisson.create(redissonCfg);
 
         // event store → redis pub/sub
-        RedissonPubSubEventStore eventStore =
-                new RedissonPubSubEventStore(redisson, redisson, null, null);
+        RedisPubSubEventStore eventStore =
+                new RedisPubSubEventStore(redisson, redisson, null, null);
 
         // store factory → memory session store + Redis event propagation
         MemoryStoreFactory storeFactory = new MemoryStoreFactory(eventStore);
