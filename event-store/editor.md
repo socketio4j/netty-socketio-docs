@@ -21,7 +21,7 @@ metaLinks:
 
 # Redis Pub/Sub
 
-The **RedissonEventStore** provides an event store for socketio4j using **Redis Pub/Sub**.\
+The **RedissonPubSubEventStore** provides an event store for socketio4j using **Redis Pub/Sub**.\
 It enables basic event forwarding between server instances by broadcasting messages across Redis channels, allowing distributed room operations and internal synchronization — but without durability or replay guarantees.
 
 **Key characteristics**
