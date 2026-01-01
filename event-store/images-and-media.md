@@ -21,7 +21,7 @@ metaLinks:
 
 # Hazelcast Pub/Sub
 
-The **HazelcastEventStore** provides a distributed event store for socketio4j using **Hazelcast ITopic**.\
+The **HazelcastPubSubEventStore** provides a distributed event store for socketio4j using **Hazelcast ITopic**.\
 It enables horizontal scaling by broadcasting events across cluster nodes so that room joins, leaves, state changes, acknowledgements, and other internal events are synchronized between multiple server instances.
 
 **Key characteristics**
