@@ -1,5 +1,5 @@
 ---
-icon: markdown
+icon: r
 layout:
   width: default
   title:

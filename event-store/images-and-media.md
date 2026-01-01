@@ -1,5 +1,5 @@
 ---
-icon: image-landscape
+icon: h
 layout:
   width: default
   title:

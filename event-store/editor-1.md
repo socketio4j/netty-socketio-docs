@@ -1,5 +1,5 @@
 ---
-icon: pen-to-square
+icon: r
 layout:
   width: default
   title:

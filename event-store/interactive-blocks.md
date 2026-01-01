@@ -1,5 +1,5 @@
 ---
-icon: hand-pointer
+icon: circle
 layout:
   width: default
   title:
