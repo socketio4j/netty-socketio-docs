@@ -18,6 +18,10 @@ layout:
 
 # Redis Reliable Pub/Sub
 
+{% hint style="info" %}
+SocketIO4J uses the Redisson client to connect to a Redis server. Alternative Redis-compatible backends such as Valkey and DragonflyDB may also be supported.
+{% endhint %}
+
 The **RedissonPubSubReliableEventStore** provides a distributed, _replay-capable_ event store for socketio4j using **Redis Reliable Topics backed by Redis Streams**.\
 It supports multi-node synchronization with optional stream trimming to control memory footprint, enabling durability across server restarts while still delivering events in near real time.
 
