@@ -45,12 +45,7 @@ Each session receives its own dedicated distributed map keyed by its `sessionId`
 👍 Provides higher durability and resiliency compared to pure in-memory storage\
 (e.g. _HazelcastStore + KafkaEventStore_, _HazelcastStore + RedisStreamEventStore_)
 
-**Limitations**
 
-❌ Storage durability is tied to Hazelcast configuration (replicas, persistence, etc.)\
-❌ Higher latency than local memory due to distributed access\
-❌ Session cleanup requires calling `destroy()` — unused session maps may remain if not cleaned\
-❌ Not suitable when Redis or another system is the authoritative source of session state
 
 ***
 

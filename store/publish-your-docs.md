@@ -49,12 +49,7 @@ Each connected client receives a dedicated Redis map identified by its `sessionI
 👍 Enables mixing storage with any EventStore backend\
 (e.g., _RedisStore + KafkaEventStore_, _RedisStore + HazelcastRingBufferEventStore_)
 
-**Limitations**
 
-❌ Redis latency overhead compared to in-memory store\
-❌ Requires Redis availability; connectivity loss prevents store access\
-❌ Large or highly dynamic session data may increase Redis load\
-❌ Cleanup depends on calling `destroy()` — orphan maps may remain if sessions are not closed properly
 
 ***
 
