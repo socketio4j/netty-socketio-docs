@@ -4,37 +4,75 @@ icon: m
 
 # Micronaut
 
-## Multi-syntax code
-
-You can add code to your GitBook pages using code blocks.
-
-When you add a code block, you can choose to [set the syntax](https://gitbook.com/docs/creating-content/blocks/code-block#set-syntax), [show line numbers](https://gitbook.com/docs/creating-content/blocks/code-block#with-line-numbers), [show a caption](https://gitbook.com/docs/creating-content/blocks/code-block#with-caption), and [wrap the lines](https://gitbook.com/docs/creating-content/blocks/code-block#wrap-code). It’s also easy to [copy the contents of a code block to the clipboard](https://gitbook.com/docs/creating-content/blocks/code-block#copying-the-code), so you can use it elsewhere.
-
-### Example of code block
-
 {% tabs %}
-{% tab title="JavaScript" %}
-```javascript
-const message = "hello world";
-console.log(message);
+{% tab title="application.properties" %}
+```properties
+netty-socket-io.hostname=localhost
+netty-socket-io.port=9092
+netty-socket-io.ping-timeout=60000
+netty-socket-io.ping-interval=25000
 ```
 {% endtab %}
 
-{% tab title="Python" %}
-```python
-message = "hello world"
-print(message)
-```
-{% endtab %}
+{% tab title="application.yml" %}
+```yml
+netty-socket-io:
+  hostname: localhost
+  port: 9092
+  ping-timeout: 60000
+  ping-interval: 25000
 
-{% tab title="Ruby" %}
-```ruby
-message = "hello world"
-puts message
 ```
 {% endtab %}
 {% endtabs %}
 
-{% hint style="info" %}
-You can make code blocks [span the full width of your window](https://gitbook.com/docs/creating-content/blocks#full-width-blocks) by clicking on the **Options menu** <i class="fa-grip-dots-vertical">:grip-dots-vertical:</i> icon in GitBook next to the block and choosing **Full width.**
-{% endhint %}
+## Main Application
+
+```
+@Singleton
+public class MicronautMainApplication {
+    
+    @Inject
+    SocketIOServer server;
+    
+    @EventListener
+    void onStartup(ServerStartupEvent event) {
+        // Add event listeners
+        server.addEventListener("chatevent", ChatMessage.class, (client, data, ackRequest) -> {
+            server.getBroadcastOperations().sendEvent("chatevent", data);
+        });
+        
+        server.start();
+        log.info("Socket.IO server started on port {}", server.getConfiguration().getPort());
+    }
+}
+
+```
+
+## Event Handlers
+
+```
+@Singleton
+public class ChatEventHandler {
+    
+    @Inject
+    SocketIOServer server;
+    
+    @OnConnect
+    public void onConnect(SocketIOClient client) {
+        log.info("Client connected: {}", client.getSessionId());
+    }
+    
+    @OnEvent("chatevent")
+    public void onChatEvent(SocketIOClient client, ChatMessage data) {
+        server.getBroadcastOperations().sendEvent("chatevent", data);
+    }
+}
+
+```
+
+## Full Example
+
+See the complete example in the [netty-socketio-examples-micronaut-base](https://github.com/socketio4j/netty-socketio/tree/main/netty-socketio-examples/netty-socketio-examples-micronaut-base) module.
+
+<br>
