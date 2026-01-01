@@ -100,7 +100,8 @@ StoreFactory sf = new RedissonStoreFactory(redis, es);
 ## Minimal server usage
 
 ```java
-Config cfg = new Config();
+Configuration cfg = new Configuration();
+// other configs
 cfg.setStoreFactory(new HazelcastStoreFactory(hz, new KafkaEventStore(...)));
 SocketIOServer server = new SocketIOServer(cfg);
 server.start();
