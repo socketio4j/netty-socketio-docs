@@ -1,29 +1,17 @@
 # Table of contents
 
-## Introduction
+## Getting Started
 
-* [Store](README.md)
-* [Event Store](introduction/event-store.md)
-* [Store Factory](introduction/store-factory.md)
-* [Store Factory API](introduction/store-factory-api.md)
+* [Server Configuration](README.md)
+* [Server Instance](getting-started/server-instance.md)
 
-## Store
+## Server Examples
 
-* [Memory Store](store/quickstart.md)
-* [Redis Store](store/publish-your-docs.md)
-* [Hazelcast Store](store/publish-your-docs-1.md)
+* [Core Java](server-examples/editor.md)
+* [Spring Boot](server-examples/spring-boot.md)
+* [Quarkus](server-examples/quarkus.md)
+* [Micronaut](server-examples/micronaut.md)
 
-## Event Store
+## Client Examples
 
-* [NATS Pub/Sub](event-store/nats-pub-sub.md)
-* [Redis Pub/Sub](event-store/editor.md)
-* [Redis Reliable Pub/Sub](event-store/editor-1.md)
-* [Redis Stream](event-store/markdown.md)
-* [Hazelcast Pub/Sub](event-store/images-and-media.md)
-* [Hazelcast Ring Buffer](event-store/interactive-blocks.md)
-* [Kafka/AutoMQ](event-store/integrations.md)
-* [Memory Event Store](event-store/memory-event-store.md)
-
-## Examples
-
-* [Memory Store + Redis Pub/Sub Event Store](examples/memory-store-+-redis-pub-sub-event-store.md)
+* [Page 1](client-examples/page-1.md)
