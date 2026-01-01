@@ -1,10 +1,5 @@
 # Store
 
-{% hint style="info" %}
-You don’t need to deal with the internals of `Store` or `EventStore`.\
-Their implementations are fully abstracted — you **only choose and control behavior through `StoreFactory`configuration**.
-{% endhint %}
-
 The **Store** interface defines a per-session key-value storage abstraction for socketio4j.\
 It allows transports, namespaces, and user code to persist small pieces of session-scoped metadata such as user IDs, authentication tokens, connection state, or room membership hints—independent of the actual backing storage implementation.
 
@@ -62,3 +57,35 @@ It allows transports, namespaces, and user code to persist small pieces of sessi
 
 > **A Store instance lives for exactly one client session and is destroyed when the session ends.**\
 > After calling `destroy()`, the store must not be accessed again.
+>
+> Automatically called when client disconnects.
+
+#### Example
+
+```
+server.addEventListener("storeDemo", String.class,
+        (client, data, ackSender) -> {
+
+    // ----- SET -----
+    client.getStore().set("key1", data);
+    System.out.println("SET key1 = " + data);
+
+    // ----- GET -----
+    String value = client.getStore().get("key1");
+    System.out.println("GET key1 = " + value);
+
+    // ----- HAS -----
+    boolean existsBefore = client.getStore().has("key1");
+    System.out.println("HAS key1 (before delete) = " + existsBefore);
+
+    // ----- DEL -----
+    client.getStore().del("key1");
+    System.out.println("DEL key1");
+
+    // ----- HAS again -----
+    boolean existsAfter = client.getStore().has("key1");
+    System.out.println("HAS key1 (after delete) = " + existsAfter);
+
+});
+
+```
