@@ -1,10 +1,5 @@
 # Event Store
 
-{% hint style="info" %}
-You don’t need to deal with the internals of `Store` or `EventStore`.\
-Their implementations are fully abstracted — you **only choose and control behavior through `StoreFactory`configuration**.
-{% endhint %}
-
 The **EventStore** interface defines socketio4j’s distributed event synchronization layer.\
 It provides a unified abstraction for publishing and subscribing to internal events — such as room joins, leaves, acknowledgements, session changes, and node-to-node synchronization — across one or more server instances.
 
