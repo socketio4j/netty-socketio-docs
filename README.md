@@ -46,10 +46,10 @@ It allows transports, namespaces, and user code to persist small pieces of sessi
 
 #### Backend behavior
 
-| Backend               | Persistence                                     | Visibility              | Characteristics                        |
-| --------------------- | ----------------------------------------------- | ----------------------- | -------------------------------------- |
-| **In-memory**         | Ephemeral, cleared on disconnect or JVM restart | Local only              | Fastest, best for single node          |
-| **Hazelcast / Redis** | Distributed (based on backend config)           | Accessible across nodes | Recommended for multi-node deployments |
+| Backend                                           | Persistence                                     | Visibility              | Characteristics                        |
+| ------------------------------------------------- | ----------------------------------------------- | ----------------------- | -------------------------------------- |
+| **In-memory**                                     | Ephemeral, cleared on disconnect or JVM restart | Local only              | Fastest, best for single node          |
+| **Hazelcast / Redis(redis, valkey, dragonflydb)** | Distributed (based on backend config)           | Accessible across nodes | Recommended for multi-node deployments |
 
 ***
 
