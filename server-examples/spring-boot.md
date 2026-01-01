@@ -46,7 +46,38 @@ public class SocketIOConfig {
 }
 ```
 
+## Main Application
+
+```
+@SpringBootApplication
+public class SpringBootMainApplication implements CommandLineRunner {
+    
+    private static final Logger log = LoggerFactory.getLogger(SpringBootMainApplication.class);
+    
+    @Autowired
+    private SocketIOServer server;
+    
+    public static void main(String[] args) {
+        SpringApplication.run(SpringBootMainApplication.class, args);
+    }
+    
+    @Override
+    public void run(String... args) throws Exception {
+        // Add event listeners
+        server.addEventListener("chatevent", ChatMessage.class, (client, data, ackRequest) -> {
+            server.getBroadcastOperations().sendEvent("chatevent", data);
+        });
+        
+        server.start();
+        log.info("Socket.IO server started on port {}", server.getConfiguration().getPort());
+    }
+}
+
+```
+
 ## Event Handler with Annotations
+
+You can use annotations to define event handlers:
 
 ```
 @Component
