@@ -21,6 +21,10 @@ metaLinks:
 
 # Redis Stream
 
+{% hint style="info" %}
+SocketIO4J uses the Redisson client to connect to a Redis server. Alternative Redis-compatible backends such as Valkey and DragonflyDB may also be supported.
+{% endhint %}
+
 The **RedisStreamEventStore** provides a distributed, streaming event store for socketio4j using **Redis Streams (XADD / XREAD)**.\
 It enables horizontal scaling by synchronizing events across multiple server instances so that internal state, room membership, and other distributed operations remain consistent across nodes.
 
