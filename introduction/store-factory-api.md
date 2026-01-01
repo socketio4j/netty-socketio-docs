@@ -58,28 +58,28 @@ StoreFactory sf = new HazelcastStoreFactory(hz, es);
 
 ***
 
-### RedissonStoreFactory
+### RedisStoreFactory
 
-#### `RedissonStoreFactory(RedissonClient redissonClient)`
+#### `RedisStoreFactory(RedissonClient redissonClient)`
 
 Creates a factory using **Redis storage** and the default **RedissonPubSubEventStore** (Redis Pub/Sub).
 
 ```java
 RedissonClient redis = Redisson.create();
-StoreFactory sf = new RedissonStoreFactory(redis);
+StoreFactory sf = new RedisStoreFactory(redis);
 // Redis storage + Redis Pub/Sub events
 ```
 
 ***
 
-#### `RedissonStoreFactory(RedissonClient redissonClient, EventStore eventStore)`
+#### `RedisStoreFactory(RedissonClient redissonClient, EventStore eventStore)`
 
 Creates a factory using **Redis storage** and a **custom EventStore**.
 
 ```java
 RedissonClient redis = Redisson.create();
 EventStore es = new NatsEventStore(...);
-StoreFactory sf = new RedissonStoreFactory(redis, es);
+StoreFactory sf = new RedisStoreFactory(redis, es);
 // Redis maps + NATS for events
 ```
 
@@ -90,7 +90,7 @@ StoreFactory sf = new RedissonStoreFactory(redis, es);
 | Storage (`StoreFactory`) | Event (`EventStore`) | Example                                                         |
 | ------------------------ | -------------------- | --------------------------------------------------------------- |
 | Memory                   | Kafka                | `new MemoryStoreFactory(new KafkaEventStore(...))`              |
-| Redis                    | NATS                 | `new RedissonStoreFactory(redis, new NatsEventStore(...))`      |
+| Redis                    | NATS                 | `new RedisStoreFactory(redis, new NatsEventStore(...))`         |
 | Hazelcast                | Redis Streams        | `new HazelcastStoreFactory(hz, new RedisStreamEventStore(...))` |
 | Memory                   | Memory               | `new MemoryStoreFactory()`                                      |
 | Hazelcast                | Kafka                | `new HazelcastStoreFactory(hz, new KafkaEventStore(...))`       |
