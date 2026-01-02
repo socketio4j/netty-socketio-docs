@@ -39,20 +39,20 @@ public class Application {
 
         // optional: listeners
         server.addConnectListener(client -> {
-            System.out.println("Client connected: " + client.getSessionId());
+            log.info("Client connected: {}", client.getSessionId());
         });
 
         server.addDisconnectListener(client -> {
-            System.out.println("Client disconnected: " + client.getSessionId());
+            log.info("Client disconnected: {}", client.getSessionId());
         });
 
         server.start();
-        System.out.println("Socket.IO server started on port 8080");
+        log.info("Socket.IO server started on port 8080");
     }
 
     public void stop() {
         if (server != null) {
-            System.out.println("Stopping server...");
+            log.info("Stopping server...");
             server.stop();
             server.getConfiguration().getStoreFactory().shutdown();
         }
@@ -61,7 +61,7 @@ public class Application {
     public static void main(String[] args) throws Exception {
         Application app = new Application();
         app.start();
-        System.out.println("Press Enter to stop");
+        log.info("Press Enter to stop");
         System.in.read();
         app.stop();
     }
