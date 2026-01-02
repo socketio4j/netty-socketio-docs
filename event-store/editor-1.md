@@ -60,9 +60,9 @@ It supports multi-node synchronization with optional stream trimming to control 
 
 **Limitations**
 
-❌ **Not fully exactly-once** — duplicates may occur after restart or reconnections\
-❌ **Ordering is per-stream** — cross-event ordering requires single-channel mode\
-❌ Requires Redis Streams support (Redis 5+)\
-❌ Reliability depends on stream retention configuration and trimming strategy
+ℹ️ **Not fully exactly-once** — duplicates may occur after restart or reconnections\
+ℹ️ **Ordering is per-stream** — cross-event ordering requires single-channel mode\
+ℹ️ Requires Redis Streams support (Redis 5+)\
+ℹ️ Reliability depends on stream retention configuration and trimming strategy
 
 > **Delivery guarantee:** _At-least-once semantics — listeners must be idempotent to handle potential duplicate deliveries._

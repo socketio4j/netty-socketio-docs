@@ -55,8 +55,8 @@ It enables **horizontal scaling** by broadcasting events across all server insta
 
 **Limitations**
 
-* ❌ Not a point-to-point queue — always broadcast style
-* ❌ No historical replay — consumes from latest offsets only
-* ❌ Requires Kafka cluster availability
+* ℹ️ Not a point-to-point queue — always broadcast style
+* ℹ️ No historical replay — consumes from latest offsets only
+* ℹ️ Requires Kafka cluster availability
 
 > **Delivery guarantee:** _At-least-once semantics — duplicate deliveries possible; listeners should be idempotent._

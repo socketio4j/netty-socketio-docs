@@ -40,9 +40,9 @@ It provides a unified abstraction for publishing and subscribing to internal eve
 
 **Limitations**
 
-❌ Delivery guarantees depend on implementation — not enforced by the interface\
-❌ Persistence, ordering, deduplication are backend responsibilities\
-❌ `nodeId`-based local filtering must be respected to avoid duplicates
+ℹ️ Delivery guarantees depend on implementation — not enforced by the interface\
+ℹ️ Persistence, ordering, deduplication are backend responsibilities\
+ℹ️ `nodeId`-based local filtering must be respected to avoid duplicates
 
 ***
 

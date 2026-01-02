@@ -64,8 +64,8 @@ It enables horizontal scaling by synchronizing events across multiple server ins
 
 **Limitations**
 
-❌ Consumers process messages independently — ordering is per-stream, not global\
-❌ Potential duplicate delivery on restarts or offset boundary races\
-❌ Requires Redis Streams support (not compatible with legacy Redis Pub/Sub mode)
+ℹ️ Consumers process messages independently — ordering is per-stream, not global\
+ℹ️ Potential duplicate delivery on restarts or offset boundary races\
+ℹ️ Requires Redis Streams support (not compatible with legacy Redis Pub/Sub mode)
 
 > **Delivery guarantee:** _At-least-once semantics — event listeners must be idempotent to handle possible duplicate messages._

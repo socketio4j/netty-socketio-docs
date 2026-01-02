@@ -50,9 +50,9 @@ It is lightweight, fast, and suitable for **single-node deployments**, developme
 
 **Limitations**
 
-❌ Not distributed — values are not synchronized across nodes\
-❌ Not persistent — data vanishes on server restart or crash\
-❌ Not suitable for horizontal scaling unless combined with a distributed `StoreFactory` implementation
+ℹ️ Not distributed — values are not synchronized across nodes\
+ℹ️ Not persistent — data vanishes on server restart or crash\
+ℹ️ Not suitable for horizontal scaling unless combined with a distributed `StoreFactory` implementation
 
 ***
 

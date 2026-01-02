@@ -55,9 +55,9 @@ It enables horizontal scaling by broadcasting events across cluster nodes so tha
 
 **Limitations**
 
-❌ RingBuffer capacity determines how long messages persist — overflow drops oldest data\
-❌ No transactional delivery or deduplication for exactly-once semantics\
-❌ Delivery ordering is per-partition / per-topic, not global across topics\
-❌ Cluster health or partition migrations may cause temporary duplicate delivery
+ℹ️ RingBuffer capacity determines how long messages persist — overflow drops oldest data\
+ℹ️ No transactional delivery or deduplication for exactly-once semantics\
+ℹ️ Delivery ordering is per-partition / per-topic, not global across topics\
+ℹ️ Cluster health or partition migrations may cause temporary duplicate delivery
 
 > **Delivery guarantee:** _At-least-once semantics — event listeners should be idempotent to safely handle duplicates._

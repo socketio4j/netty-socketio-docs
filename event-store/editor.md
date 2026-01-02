@@ -59,9 +59,9 @@ It enables basic event forwarding between server instances by broadcasting messa
 
 **Limitations**
 
-❌ Events are **not persisted** — subscribers miss events while disconnected\
-❌ No replay mechanism — reconnecting nodes start from “now”\
-❌ Duplicate messages possible during reconnection\
-❌ Ordering only applies per-channel; global ordering requires `SINGLE_CHANNEL` mode
+ℹ️ Events are **not persisted** — subscribers miss events while disconnected\
+ℹ️ No replay mechanism — reconnecting nodes start from “now”\
+ℹ️ Duplicate messages possible during reconnection\
+ℹ️ Ordering only applies per-channel; global ordering requires `SINGLE_CHANNEL` mode
 
 > **Delivery guarantee:** At-most-once semantics. _Best-effort, ephemeral delivery — listeners must tolerate message loss and out-of-order delivery._

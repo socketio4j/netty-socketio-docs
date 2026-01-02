@@ -1,147 +1,91 @@
----
-icon: object-ungroup
----
+# Store
 
-# Namespace
+The **Store** interface defines a per-session key-value storage abstraction for socketio4j.\
+It allows transports, namespaces, and user code to persist small pieces of session-scoped metadata such as user IDs, authentication tokens, connection state, or room membership hints—independent of the actual backing storage implementation.
 
-## Namespaces
+**Key characteristics**
 
-Namespaces provide logical separation of features and event handling within the SocketIO server.\
-They allow different parts of an application to operate independently using a **single physical connection**.
+* **Session-scoped storage** — one store instance exists per connected client session
+* **Key-value semantic** — arbitrary objects associated with string keys
+* **Backend-agnostic** — implementations may use memory, Hazelcast, Redis, or other data stores
+* **Lifecycle-aware** — destroyed when the underlying client disconnects
+* **Type-safe retrieval** — returned values can be cast or generically typed
 
-{% hint style="info" %}
-**Namespaces do not create separate socket connections.**\
-A client connects once and can join multiple namespaces over the same underlying WebSocket/TCP session.
-{% endhint %}
+**How it works**
 
-***
+* `set` associates a value with a key for the lifetime of the session
+* `get` returns a stored value, or `null` if not present
+* `has` checks for key existence without loading the value
+* `del` removes a single key-value entry
+* `destroy` removes all entries, invalidating the store instance
 
-### Default Namespace
+**Usage scenarios**
 
-If a client connects without specifying a namespace, it is attached to the default namespace (`""`).
+| Case                        | Example                                             |
+| --------------------------- | --------------------------------------------------- |
+| Authentication              | store `"userId"`, `"tenant"`, `"tokenClaims"`       |
+| Reconnection hints          | store `"rooms"` or custom metadata                  |
+| Custom handshake parameters | persist user metadata from upgrade/handshake        |
+| Namespaced logic            | attach state needed only during the current session |
 
-```java
-Configuration config = new Configuration();
-config.setPort(9092);
+**Advantages**
 
-SocketIOServer server = new SocketIOServer(config);
-// default namespace exists implicitly
-server.start();
-```
+👍 Works uniformly across clustered and standalone modes\
+👍 Keeps session metadata isolated to each connection\
+👍 Allows switching storage backend without user code changes\
+👍 Supports lightweight in-memory operation for single-node deployments
 
-### Custom Namespace
+**Limitations**
 
-Custom namespaces separate application concerns and event scopes.
-
-```java
-SocketIOServer server = new SocketIOServer(config);
-
-Namespace chat = server.addNamespace("/chat");
-Namespace admin = server.addNamespace("/auth");
-
-server.start();
-```
-
-{% hint style="info" %}
-Please do not forget to add "/", its always "/namespace" NOT just "namespace".
-{% endhint %}
-
-Each namespace defines:
-
-* its own event listeners
-* its own connection lifecycle
-* its own authorization logic
-* its own broadcast operations
+ℹ️ Not intended for large objects or binary storage\
+ℹ️ Not a distributed data model by itself — distribution depends on implementation\
+ℹ️ No built-in TTL or expiration beyond session lifecycle\
+ℹ️ Not shared across sessions unless backed by shared storage
 
 ***
 
-### Public Namespace Example (`/chat`)
+#### Backend behavior
 
-The `/chat` namespace is open and allows general messaging without authentication.
-
-#### Server
-
-```java
-Configuration config = new Configuration();
-config.setPort(9092);
-
-SocketIOServer server = new SocketIOServer(config);
-Namespace chat = server.addNamespace("/chat");
-
-// new client connection
-chat.addConnectListener(client -> {
-    System.out.println("[/chat] connected -> " + client.getSessionId());
-});
-
-// message event
-chat.addEventListener("message", String.class, (client, data, ack) -> {
-    // broadcast to all clients in /chat
-    chat.getBroadcastOperations().sendEvent("message", data);
-});
-
-server.start();
-```
-
-#### Client
-
-```javascript
-const chat = io("http://localhost:9092/chat");
-
-chat.on("connect", () => console.log("connected to /chat"));
-chat.emit("message", "hello everyone");
-```
+| Backend                                           | Persistence                                     | Visibility              | Characteristics                        |
+| ------------------------------------------------- | ----------------------------------------------- | ----------------------- | -------------------------------------- |
+| **In-memory**                                     | Ephemeral, cleared on disconnect or JVM restart | Local only              | Fastest, best for single node          |
+| **Hazelcast / Redis(redis, valkey, dragonflydb)** | Distributed (based on backend config)           | Accessible across nodes | Recommended for multi-node deployments |
 
 ***
 
-### Authenticated Namespace Example (`/auth`)
+#### Lifecycle guarantee
 
-The `/auth` namespace restricts access using authorization logic executed during connection.
+> **A Store instance lives for exactly one client session and is destroyed when the session ends.**\
+> After calling `destroy()`, the store must not be accessed again.
+>
+> Automatically called when client disconnects.
 
-#### Server
+#### Example
 
-```java
-Configuration config = new Configuration();
-config.setPort(9092);
+```
+server.addEventListener("storeDemo", String.class,
+        (client, data, ackSender) -> {
 
-SocketIOServer server = new SocketIOServer(config);
-Namespace admin = server.addNamespace("/auth");
+    // ----- SET -----
+    client.getStore().set("key1", data);
+    System.out.println("SET key1 = " + data);
 
-// verify token on namespace connect
-admin.setAuthorizationListener(data -> {
-    String token = data.getSingleUrlParam("token");
-    return "secret123".equals(token);
+    // ----- GET -----
+    String value = client.getStore().get("key1");
+    System.out.println("GET key1 = " + value);
+
+    // ----- HAS -----
+    boolean existsBefore = client.getStore().has("key1");
+    System.out.println("HAS key1 (before delete) = " + existsBefore);
+
+    // ----- DEL -----
+    client.getStore().del("key1");
+    System.out.println("DEL key1");
+
+    // ----- HAS again -----
+    boolean existsAfter = client.getStore().has("key1");
+    System.out.println("HAS key1 (after delete) = " + existsAfter);
+
 });
 
-// privileged alert event
-admin.addEventListener("alert", String.class, (client, data, ack) -> {
-    admin.getBroadcastOperations().sendEvent("alert", data);
-});
-
-server.start();
 ```
-
-#### Authorized Client
-
-```javascript
-const auth = io("http://localhost:9092/auth", {
-    query: { token: "secret123" }
-});
-
-admin.emit("alert", "restart service");
-```
-
-#### Unauthorized Client
-
-```javascript
-io("http://localhost:9092/auth", {
-    query: { token: "invalid" }
-});
-```
-
-Expected server output:
-
-```
-[/auth] authorization failed -> connection rejected
-```
-
-***

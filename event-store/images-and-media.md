@@ -56,9 +56,9 @@ It enables horizontal scaling by broadcasting events across cluster nodes so tha
 
 **Limitations**
 
-❌ No message persistence beyond Hazelcast topic buffering — messages may be dropped on restart\
-❌ Ordering is per-topic, not global across all event types\
-❌ No historical replay — listeners receive only messages after subscription\
-❌ Duplicate delivery possible during failover events
+ℹ️ No message persistence beyond Hazelcast topic buffering — messages may be dropped on restart\
+ℹ️ Ordering is per-topic, not global across all event types\
+ℹ️ No historical replay — listeners receive only messages after subscription\
+ℹ️ Duplicate delivery possible during failover events
 
 > **Delivery guarantee:** _At-least-once semantics — event listeners must be idempotent to safely handle duplicate messages._

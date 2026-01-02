@@ -39,9 +39,9 @@ It allows event synchronization across multiple server instances by broadcasting
 
 **Limitations**
 
-❌ Events are **not persisted** — missed messages cannot be replayed\
-❌ Subscribers must be connected to receive events\
-❌ Duplicates may occur during dispatcher recreation or reconnection\
-❌ Does not support consumer offsets, backpressure, or stream trimming (JetStream required for that which is currently planned for development)
+ℹ️ Events are **not persisted** — missed messages cannot be replayed\
+ℹ️ Subscribers must be connected to receive events\
+ℹ️ Duplicates may occur during dispatcher recreation or reconnection\
+ℹ️ Does not support consumer offsets, backpressure, or stream trimming (JetStream required for that which is currently planned for development)
 
 > **Delivery guarantee:** At-most-once semantics. _Best-effort delivery with possible message loss — event listeners should tolerate missing or out-of-order events._
