@@ -1,3 +1,13 @@
 # Table of contents
 
-* [API docs](README.md)
+## Getting Started
+
+* [Server Configuration](README.md)
+* [Server Instance](getting-started/server-instance.md)
+
+## Server Examples
+
+* [Core Java](server-examples/editor.md)
+* [Spring Boot](server-examples/spring-boot.md)
+* [Quarkus](server-examples/quarkus.md)
+* [Micronaut](server-examples/micronaut.md)
