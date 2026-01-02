@@ -1,3 +1,4 @@
 # Table of contents
 
-* [Socketio4j Documentation](README.md)
+* [Getting Started](README.md)
+* [Version Policy](version-policy.md)
