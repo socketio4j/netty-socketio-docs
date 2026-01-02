@@ -1,91 +1,80 @@
-# Store
+---
+icon: bullhorn
+---
 
-The **Store** interface defines a per-session key-value storage abstraction for socketio4j.\
-It allows transports, namespaces, and user code to persist small pieces of session-scoped metadata such as user IDs, authentication tokens, connection state, or room membership hints—independent of the actual backing storage implementation.
+# Emergency broadcast app
 
-**Key characteristics**
+## Server
 
-* **Session-scoped storage** — one store instance exists per connected client session
-* **Key-value semantic** — arbitrary objects associated with string keys
-* **Backend-agnostic** — implementations may use memory, Hazelcast, Redis, or other data stores
-* **Lifecycle-aware** — destroyed when the underlying client disconnects
-* **Type-safe retrieval** — returned values can be cast or generically typed
+```java
+import com.socketio4j.socketio.Configuration;
+import com.socketio4j.socketio.SocketIOServer;
+import com.socketio4j.socketio.SocketIOClient;
 
-**How it works**
+public class EmergencyServer {
+    public static void main(String[] args) {
+        Configuration config = new Configuration();
+        config.setHostname("localhost");
+        config.setPort(9092);
 
-* `set` associates a value with a key for the lifetime of the session
-* `get` returns a stored value, or `null` if not present
-* `has` checks for key existence without loading the value
-* `del` removes a single key-value entry
-* `destroy` removes all entries, invalidating the store instance
+        SocketIOServer server = new SocketIOServer(config);
 
-**Usage scenarios**
+        // Event: broadcast emergency messages
+        server.addEventListener("emergency", String.class,
+            (SocketIOClient client, String message, var ack) -> {
+            // print locally
+            log.info("EMERGENCY message received: {}", message);
 
-| Case                        | Example                                             |
-| --------------------------- | --------------------------------------------------- |
-| Authentication              | store `"userId"`, `"tenant"`, `"tokenClaims"`       |
-| Reconnection hints          | store `"rooms"` or custom metadata                  |
-| Custom handshake parameters | persist user metadata from upgrade/handshake        |
-| Namespaced logic            | attach state needed only during the current session |
+            // send to all clients
+            server.getBroadcastOperations().sendEvent("emergency", message);
+        });
 
-**Advantages**
-
-👍 Works uniformly across clustered and standalone modes\
-👍 Keeps session metadata isolated to each connection\
-👍 Allows switching storage backend without user code changes\
-👍 Supports lightweight in-memory operation for single-node deployments
-
-**Limitations**
-
-ℹ️ Not intended for large objects or binary storage\
-ℹ️ Not a distributed data model by itself — distribution depends on implementation\
-ℹ️ No built-in TTL or expiration beyond session lifecycle\
-ℹ️ Not shared across sessions unless backed by shared storage
-
-***
-
-#### Backend behavior
-
-| Backend                                           | Persistence                                     | Visibility              | Characteristics                        |
-| ------------------------------------------------- | ----------------------------------------------- | ----------------------- | -------------------------------------- |
-| **In-memory**                                     | Ephemeral, cleared on disconnect or JVM restart | Local only              | Fastest, best for single node          |
-| **Hazelcast / Redis(redis, valkey, dragonflydb)** | Distributed (based on backend config)           | Accessible across nodes | Recommended for multi-node deployments |
-
-***
-
-#### Lifecycle guarantee
-
-> **A Store instance lives for exactly one client session and is destroyed when the session ends.**\
-> After calling `destroy()`, the store must not be accessed again.
->
-> Automatically called when client disconnects.
-
-#### Example
+        server.start();
+        log.info("Emergency server started on :9092");
+    }
+}
 
 ```
-server.addEventListener("storeDemo", String.class,
-        (client, data, ackSender) -> {
 
-    // ----- SET -----
-    client.getStore().set("key1", data);
-    log.info("SET key1 = {}", data);
+## Client
 
-    // ----- GET -----
-    String value = client.getStore().get("key1");
-    log.info("GET key1 = {}", value);
+```html
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Emergency Alert Client</title>
+</head>
 
-    // ----- HAS -----
-    boolean existsBefore = client.getStore().has("key1");
-    log.info("HAS key1 (before delete) = {}", existsBefore);
+<body>
+  <h1>🚨 Emergency Alert Listener</h1>
+  <p>Status: <span id="status">Connecting...</span></p>
 
-    // ----- DEL -----
-    client.getStore().del("key1");
-    log.info("DEL key1");
+  <!-- Socket.IO client -->
+  <script src="https://cdn.socket.io/4.7.5/socket.io.min.js"></script>
 
-    // ----- HAS again -----
-    boolean existsAfter = client.getStore().has("key1");
-    log.info("HAS key1 (after delete) = {}", existsAfter);
+  <script>
+    const statusEl = document.getElementById("status");
+    const socket = io("http://localhost:9092");
 
-});
+    socket.on("connect", () => {
+      statusEl.innerText = "Connected";
+      console.log("Connected to emergency server");
+    });
+
+    // listen for emergency alert broadcasts
+    socket.on("emergency", msg => {
+      console.log("Emergency alert received:", msg);
+      alert("🚨 Emergency: " + msg);
+    });
+
+    socket.on("disconnect", () => {
+      statusEl.innerText = "Disconnected";
+    });
+  </script>
+
+</body>
+</html>
 
 ```

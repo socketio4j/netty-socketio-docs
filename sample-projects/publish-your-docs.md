@@ -49,11 +49,11 @@ public class StockMarketServer {
         // subscribe to stock & join stock room
         server.addEventListener("stock:subscribe", String.class, (client, stockId, ack) -> {
             client.joinRoom(stockId);
-            System.out.println("Client subscribed to => " + stockId);
+            log.info("Client subscribed to => {}", stockId);
         });
 
         server.start();
-        System.out.println("Stock Market Server running on :9092");
+        log.info("Stock Market Server running on :9092");
 
         // simulated real-time prices
         String[] stocks = { "AAPL", "GOOG", "TSLA", "MSFT" };
