@@ -1,113 +1,147 @@
 ---
-icon: trophy-star
+icon: object-ungroup
 ---
 
-# Socketio4j + Netty + Java
+# Namespace
 
-## Why Socketio4j - Netty Java Server?
+## Namespaces
 
-> A comparison of Socket.IO server implementations across languages
->
-> Here we compare available Socket.IO server implementations — focusing on maintenance status, stability, enterprise suitability, ecosystem maturity, and long-term support.
+Namespaces provide logical separation of features and event handling within the SocketIO server.\
+They allow different parts of an application to operate independently using a **single physical connection**.
 
-***
-
-### Socket.IO Server
-
-A server library is only considered a full implementation if it:
-
-* ✅ Implements the full Socket.IO protocol (not just WebSockets)
-* ✅ Works with standard Socket.IO clients (JS, Swift, Java, C++, etc.)
-* ✅ Provides robust handling of:
-  * Persistent connections & automatic reconnections
-  * Events, acknowledgments (acks), and binary data
-  * Broadcasting, rooms, and namespaces
+{% hint style="info" %}
+**Namespaces do not create separate socket connections.**\
+A client connects once and can join multiple namespaces over the same underlying WebSocket/TCP session.
+{% endhint %}
 
 ***
 
-### Direct Implementation Comparison
+### Default Namespace
 
-<table><thead><tr><th>Language</th><th width="121.0859375">Implementation</th><th width="132.7578125">Status</th><th>Enterprise Ready</th><th width="125.92578125">Ecosystem</th><th width="117.32421875">Clustering</th><th width="127.76953125">Notes</th></tr></thead><tbody><tr><td>Java(Recommended)</td><td>socketio4j / netty-socketio</td><td>✅ Active</td><td>✅ High</td><td>✅ Excellent</td><td>Redis/NATS /Hazelcast/Kafka</td><td>Best kept up-to-date; solid enterprise tooling.</td></tr><tr><td>Java</td><td>netty-socketio (original)</td><td>❌ <em>Inactive</em></td><td>❌ Risky</td><td>⚠ Legacy</td><td>Limited</td><td>Deprecated status; low community activity.</td></tr><tr><td>JavaScript</td><td>socket.io (Official)</td><td>✅ Active</td><td>⚠ Variable</td><td>✅ Massive</td><td>✔ Built-in</td><td>Good for prototyping; hard to scale predictably.</td></tr><tr><td>Python</td><td>python-socketio</td><td>⚠ Sporadic</td><td>⚠ Uncertain</td><td>⚠ Smaller</td><td>Basic</td><td>Not battle-tested at enterprise scale.</td></tr><tr><td>Go</td><td>go-socket.io</td><td>❌ Minimal</td><td>⚠ Risky</td><td>⚠ Small</td><td>Limited</td><td>Not compatible with latest protocol versions.</td></tr><tr><td>C# / .NET</td><td>Quobject</td><td>❌ Unmaintained</td><td>❌ No</td><td>⚠ Legacy</td><td>None</td><td>Outdated and hard to integrate.</td></tr></tbody></table>
+If a client connects without specifying a namespace, it is attached to the default namespace (`""`).
 
-***
+```java
+Configuration config = new Configuration();
+config.setPort(9092);
 
-### Key Comparison Areas
+SocketIOServer server = new SocketIOServer(config);
+// default namespace exists implicitly
+server.start();
+```
 
-#### Active Maintenance
+### Custom Namespace
 
-Enterprise systems require:
+Custom namespaces separate application concerns and event scopes.
 
-1. Regular updates
-2. Security patches
-3. Compatibility with modern Socket.IO clients
+```java
+SocketIOServer server = new SocketIOServer(config);
 
-Only two libraries currently qualify:
+Namespace chat = server.addNamespace("/chat");
+Namespace admin = server.addNamespace("/auth");
 
-* socketio4j (Java)
-* socket.io (JavaScript official)
+server.start();
+```
 
-> Why this matters: Socket.IO’s protocol evolves. Outdated servers (like the older Java or C# ports) often break when newer client versions try to connect.
+{% hint style="info" %}
+Please do not forget to add "/", its always "/namespace" NOT just "namespace".
+{% endhint %}
 
-#### Enterprise Reliability
+Each namespace defines:
 
-| Capability                 | socketio4j (Java) | socket.io (JS)    | Others |
-| -------------------------- | ----------------- | ----------------- | ------ |
-| Strong typing & Safety     | ✅                 | ❌                 | ❌      |
-| JVM Tooling & Profiling    | ✅                 | ❌                 | ❌      |
-| Predictable GC & Threading | ✅                 | ❌                 | —      |
-| Fine-grained Concurrency   | ✅  (Netty pools)  | ❌ (Single thread) | Varies |
-
-**Verdict**: Enterprises prefer predictability, observability, and tooling — qualities where Java clearly leads.
-
-***
-
-#### Clustering & Scale
-
-Clustering ensures reliability when dealing with hundreds of servers or thousands of concurrent clients.
-
-* socketio4j: ✔ Strong. Uses enterprise adapters (Redis/NATS) for multi-instance coordination.
-* socket.io: ✔ Good. Standard adapters work well for web-scale but can hit event-loop bottlenecks.
-* Others: ✖ Poor. Minimal or no clustering support makes them dead-ends for growth.
+* its own event listeners
+* its own connection lifecycle
+* its own authorization logic
+* its own broadcast operations
 
 ***
 
-### Ecosystem and Tooling
+### Public Namespace Example (`/chat`)
 
-socketio4j (Java)
+The `/chat` namespace is open and allows general messaging without authentication.
 
-* Integration: Solid integration with Spring Boot, Micronaut, Quarkus.
-* Infrastructure: Works natively with enterprise Java infrastructure.
-* Observability: Access to JVM profilers, structured logging, tracing, and monitoring.
+#### Server
 
-socket.io (JavaScript)
+```java
+Configuration config = new Configuration();
+config.setPort(9092);
 
-* Ecosystem: Massive ecosystem of middlewares.
-* Limitation: No built-in JVM-like profiling; harder to debug complex production races.
+SocketIOServer server = new SocketIOServer(config);
+Namespace chat = server.addNamespace("/chat");
 
-Other languages (Python/Go/Rust)
+// new client connection
+chat.addConnectListener(client -> {
+    System.out.println("[/chat] connected -> " + client.getSessionId());
+});
 
-* Seldom used for realtime scaling; often experimental or maintaining outdated ports.
+// message event
+chat.addEventListener("message", String.class, (client, data, ack) -> {
+    // broadcast to all clients in /chat
+    chat.getBroadcastOperations().sendEvent("message", data);
+});
+
+server.start();
+```
+
+#### Client
+
+```javascript
+const chat = io("http://localhost:9092/chat");
+
+chat.on("connect", () => console.log("connected to /chat"));
+chat.emit("message", "hello everyone");
+```
 
 ***
 
-#### 🏆 Best option for enterprise realtime
+### Authenticated Namespace Example (`/auth`)
 
-Java with socketio4j + Netty
+The `/auth` namespace restricts access using authorization logic executed during connection.
 
-* ✔ Actively maintained
-* ✔ Enterprise-grade stability
-* ✔ Scalable & observable
-* ✔ Modern Socket.IO protocol support
+#### Server
 
-#### ⚠ JavaScript socket.io
+```java
+Configuration config = new Configuration();
+config.setPort(9092);
 
-* ✔ Actively maintained
-* ✔ Great for prototyping & small apps
-* ⚠ Harder to scale predictably in enterprise
-* ⚠ Single event-loop limits heavy concurrency
+SocketIOServer server = new SocketIOServer(config);
+Namespace admin = server.addNamespace("/auth");
 
-#### 🚫 All other Socket.IO implementations
+// verify token on namespace connect
+admin.setAuthorizationListener(data -> {
+    String token = data.getSingleUrlParam("token");
+    return "secret123".equals(token);
+});
 
-* ❌ Not actively maintained
-* ❌ Protocol compatibility gaps
-* ❌ Unsuitable for production enterprise workloads
+// privileged alert event
+admin.addEventListener("alert", String.class, (client, data, ack) -> {
+    admin.getBroadcastOperations().sendEvent("alert", data);
+});
+
+server.start();
+```
+
+#### Authorized Client
+
+```javascript
+const auth = io("http://localhost:9092/auth", {
+    query: { token: "secret123" }
+});
+
+admin.emit("alert", "restart service");
+```
+
+#### Unauthorized Client
+
+```javascript
+io("http://localhost:9092/auth", {
+    query: { token: "invalid" }
+});
+```
+
+Expected server output:
+
+```
+[/auth] authorization failed -> connection rejected
+```
+
+***
