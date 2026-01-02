@@ -1,5 +1,5 @@
 ---
-icon: paper-plane-top
+icon: inbox-out
 ---
 
 # Emitting events

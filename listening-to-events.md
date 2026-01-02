@@ -1,5 +1,5 @@
 ---
-icon: ear
+icon: inbox-in
 ---
 
 # Listening to events
