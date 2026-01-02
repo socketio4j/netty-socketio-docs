@@ -12,7 +12,7 @@ icon: inbox-in
 
 ```java
 server.addConnectListener(client -> {
-    System.out.println("Client connected: " + client.getSessionId());
+    log.info("Client connected: {}", client.getSessionId());
 });
 ```
 
@@ -22,7 +22,7 @@ Called whenever a client connects.
 
 ```java
 server.addDisconnectListener(client -> {
-    System.out.println("Client disconnected: " + client.getSessionId());
+    log.info("Client disconnected: {}", client.getSessionId());
 });
 ```
 
@@ -33,7 +33,7 @@ To listen for custom named events:
 ```java
 server.addEventListener("chat", ChatMessage.class,
     (client, data, ackRequest) -> {
-        System.out.println("Chat received: " + data.getText());
+        log.info("Chat received: {}", data.getText());
 });
 ```
 

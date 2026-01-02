@@ -11,7 +11,7 @@ SocketIOServer server = new SocketIOServer(config);
 
 // connection
 server.addConnectListener(client ->
-    System.out.println("Connected: " + client.getSessionId())
+    log.info("Connected: {}", client.getSessionId())
 );
 
 // listen for chat

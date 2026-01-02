@@ -1,13 +1,9 @@
 # Table of contents
 
-## Getting Started
-
-* [Server Configuration](README.md)
-* [Server Instance](getting-started/server-instance.md)
-
-## Server Examples
-
-* [Core Java](server-examples/editor.md)
-* [Spring Boot](server-examples/spring-boot.md)
-* [Quarkus](server-examples/quarkus.md)
-* [Micronaut](server-examples/micronaut.md)
+* [Namespace](README.md)
+* [Emitting events](emitting-events.md)
+* [Listening to events](listening-to-events.md)
+* [Broadcasting](broadcasting.md)
+* [Rooms](rooms.md)
+* [Example: Putting It Together](example-putting-it-together.md)
+* [Tips & Best Practices](tips-and-best-practices.md)
