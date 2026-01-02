@@ -1,319 +1,209 @@
 ---
-icon: gear
+icon: play
 ---
 
-# Server Configuration
+# Getting Started
 
-## Minimal Example
+## Version
 
-```java
-Configuration config = new Configuration();
-config.setHostname("127.0.0.1");
-config.setPort(9092);
-config.setContext("/socket.io");
-config.setTransports(Transport.POLLING, Transport.WEBSOCKET);
-config.setStoreFactory(new RedisStoreFactory(redissonClient));
-```
+* 5.0 - Planned & Experimental Phase
+* 4.0 - New API & Adapters - In Active Development & Support
+  * 4.0.0-SNAPSHOT - Upcoming LTS
+* 3.0 - Maintenance of parent fork
+  * 3.0.1 - Stable - Compatiable with parent fork
 
 {% hint style="info" %}
-Defaults work for most use cases; additional overrides are listed below.
+## Please check version policy for more [version-policy.md](version-policy.md "mention")
 {% endhint %}
 
-{% hint style="warning" %}
-For connection auth check [here](./#authorization).
-{% endhint %}
+> New project or new to socketio4j? Use the latest LTS (4.0.x+).
 
-## Network & Binding
+## Java Support Matrix
 
-| Property   | Type     | Default      | Description                                        |
-| ---------- | -------- | ------------ | -------------------------------------------------- |
-| `hostname` | `String` | `null`       | Bind address. If unset, binds to `0.0.0.0` / `::0` |
-| `port`     | `int`    | `-1`         | Server port (must be set)                          |
-| `context`  | `String` | `/socket.io` | Socket.IO context path                             |
+| Version | Minimum Java for Compilation | Minimum Java for Runtime | Recommended Java Versions |
+| ------- | ---------------------------- | ------------------------ | ------------------------- |
+| 3.0.x   | 11                           | 8                        | 17 / 21 / 25              |
+| 4.0.x   | 11                           | 8                        | 17 / 21 / 25              |
 
-```java
-config.setHostname("0.0.0.0");
-config.setPort(9092);
-config.setContext("/socket.io");
+## Installation
+
+### Java
+
+{% tabs %}
+{% tab title="Maven" %}
+{% code title="pom.xml" %}
+```xml
+<dependency>
+  <groupId>com.socketio4j</groupId>
+  <artifactId>netty-socketio-core</artifactId>
+  <version>{$socketio.core.version}</version>
+</dependency>
 ```
+{% endcode %}
+{% endtab %}
 
-
-
-***
-
-## Threading Model
-
-| Property        | Type  | Default | Notes                          |
-| --------------- | ----- | ------- | ------------------------------ |
-| `bossThreads`   | `int` | `0`     | `CPU * 2 when value sets to 0` |
-| `workerThreads` | `int` | `0`     | `CPU * 2 when value sets to 0` |
-
-```java
-config.setBossThreads(2);
-config.setWorkerThreads(16);
+{% tab title="Gradle - Groovy DSL" %}
+{% code title="build.gradle" %}
+```groovy
+dependencies {
+    implementation "com.socketio4j:netty-socketio-core:${socketioCoreVersion}"
+}
 ```
+{% endcode %}
+{% endtab %}
 
-{% hint style="info" %}
-**Boss vs Worker threads**\
-Boss threads accept connections; worker threads handle all I/O.\
-Add boss threads **only** to increase **connection accept rate**; use **1 for most cases**.\
-Scale worker threads for throughput—too many cause context switching.
-{% endhint %}
-
-
-
-***
-
-## Transport Configuration
-
-| Property         | Type              | Default              | Description                                            |
-| ---------------- | ----------------- | -------------------- | ------------------------------------------------------ |
-| `transports`     | `List<Transport>` | `WEBSOCKET, POLLING` | Enabled transports                                     |
-| `transportType`  | `TransportType`   | `AUTO`               | Native IO selection (EPOLL / KQUEUE / IO\_URING / NIO) |
-| `upgradeTimeout` | `int (ms)`        | `10000`              | Polling → WebSocket upgrade timeout                    |
-
-```java
-config.setTransports(Transport.WEBSOCKET);
-config.setTransportType(TransportType.EPOLL);
+{% tab title="Gradle - Kotlin DSL" %}
+{% code title="build.gradle.kts" %}
+```kts
+dependencies {
+    implementation("com.socketio4j:netty-socketio-quarkus:$socketioCoreVersion")
+}
 ```
+{% endcode %}
+{% endtab %}
+{% endtabs %}
 
-{% hint style="info" %}
-**In AUTO transport mode,** socketio4j automatically selects the best available transport at startup in the following order: **IO\_URING → EPOLL → KQUEUE → NIO**.
+### Spring
 
-If the selected transport is not available on the current platform, socketio4j **safely falls back to NIO** without failing startup.
-{% endhint %}
-
-
-
-***
-
-## Heartbeat & Timeouts
-
-| Property           | Default    | Description                     |
-| ------------------ | ---------- | ------------------------------- |
-| `pingInterval`     | `25000 ms` | Ping interval                   |
-| `pingTimeout`      | `60000 ms` | Ping timeout (`0` disables)     |
-| `firstDataTimeout` | `5000 ms`  | Prevents silent channel attacks |
-
-> ℹ️ **Ping interval vs ping timeout**\
-> &#xNAN;**`pingInterval`** defines how often the server sends heartbeat pings to keep the connection alive (NAT keep-alive).\
-> &#xNAN;**`pingTimeout`** defines how long the server waits **without a pong** before considering the client disconnected.
->
-> In short:\
-> **interval = how often to check**,\
-> **timeout = how long to wait before giving up**.
-
-```java
-config.setPingInterval(20000);
-config.setPingTimeout(60000);
-config.setFirstDataTimeout(5000);
+{% tabs %}
+{% tab title="Maven" %}
+{% code title="pom.xml" %}
+```xml
+<dependency>
+  <groupId>com.socketio4j</groupId>
+  <artifactId>netty-socketio-spring</artifactId>
+  <version>{$socketio.spring.version}</version>
+</dependency>
 ```
+{% endcode %}
+{% endtab %}
 
-{% hint style="info" %}
-**NAT timeout & keep-alive hint**\
-`pingInterval` must be **shorter than typical NAT idle timeouts** (usually 30–60s) to keep connections alive behind routers and mobile networks.
-
-Lower values improve NAT survivability and faster dead-peer detection, but **increase network and CPU overhead**.\
-Higher values reduce overhead, but risk **silent disconnects** on NATs and load balancers.
-{% endhint %}
-
-
-
-***
-
-## Payload & Frame Limits
-
-| Property                | Default | Description              |
-| ----------------------- | ------- | ------------------------ |
-| `maxHttpContentLength`  | `64 KB` | Max HTTP request size    |
-| `maxFramePayloadLength` | `64 KB` | Max WebSocket frame size |
-
-```java
-config.setMaxHttpContentLength(256 * 1024);
-config.setMaxFramePayloadLength(256 * 1024);
+{% tab title="Gradle - Groovy DSL" %}
+{% code title="build.gradle" %}
+```groovy
+dependencies {
+    implementation "com.socketio4j:netty-socketio-spring:${socketioSpringVersion}"
+}
 ```
+{% endcode %}
+{% endtab %}
 
-
-
-***
-
-## CORS & HTTP Behavior
-
-| Property              | Default | Description                    |
-| --------------------- | ------- | ------------------------------ |
-| `enableCors`          | `true`  | Enable CORS                    |
-| `origin`              | `null`  | `Access-Control-Allow-Origin`  |
-| `allowHeaders`        | `null`  | `Access-Control-Allow-Headers` |
-| `addVersionHeader`    | `true`  | Adds `Server` header           |
-| `allowCustomRequests` | `false` | Allow non-Socket.IO requests   |
-
-```java
-config.setEnableCors(true);
-config.setOrigin("https://example.com");
-config.setAllowHeaders("Authorization,Content-Type");
+{% tab title="Gradle - Kotlin DSL" %}
+{% code title="build.gradle.kts" %}
+```kts
+dependencies {
+    implementation("com.socketio4j:netty-socketio-spring:$socketioSpringVersion")
+}
 ```
+{% endcode %}
+{% endtab %}
+{% endtabs %}
 
+### Spring Boot
 
-
-***
-
-## Compression
-
-| Property               | Default | Description          |
-| ---------------------- | ------- | -------------------- |
-| `httpCompression`      | `true`  | GZIP / Deflate       |
-| `websocketCompression` | `true`  | `permessage-deflate` |
-
-```java
-config.setHttpCompression(true);
-config.setWebsocketCompression(true);
+{% tabs %}
+{% tab title="Maven" %}
+{% code title="pom.xml" %}
+```xml
+<dependency>
+  <groupId>com.socketio4j</groupId>
+  <artifactId>netty-socketio-spring-boot-starter</artifactId>
+  <version>{$socketio.spring-boot-starter.version}</version>
+</dependency>
 ```
+{% endcode %}
+{% endtab %}
 
-
-
-***
-
-## Buffer & ACK Handling
-
-| Property             | Default             | Description              |
-| -------------------- | ------------------- | ------------------------ |
-| `preferDirectBuffer` | `true`              | Use Netty direct buffers |
-| `ackMode`            | `AUTO_SUCCESS_ONLY` | Auto-ACK behavior        |
-
-```java
-config.setPreferDirectBuffer(true);
-config.setAckMode(AckMode.AUTO);
+{% tab title="Gradle - Groovy DSL" %}
+{% code title="build.gradle" %}
+```groovy
+dependencies {
+    implementation "com.socketio4j:netty-socketio-spring-boot-starter:${socketioSpringBootStarterVersion}"
+}
 ```
+{% endcode %}
+{% endtab %}
 
-{% hint style="info" %}
-**Ack behavior**
-
-* Acks are sent **at most once** and **only if requested**
-* **Manual ack** always suppresses auto-ack
-* **`AUTO`** → always auto-acknowledges with `[]` (even on exception)
-* **`AUTO_SUCCESS_ONLY`** → auto-acknowledges with `[]` **only on success**
-* **`MANUAL`** → developer is fully responsible for sending the ack
-{% endhint %}
-
-
-
-***
-
-## Session & Security
-
-| Property         | Default | Description               |
-| ---------------- | ------- | ------------------------- |
-| `randomSession`  | `false` | Randomize session IDs     |
-| `needClientAuth` | `false` | TLS client authentication |
-
-```java
-config.setRandomSession(true);
-config.setNeedClientAuth(true);
+{% tab title="Gradle - Kotlin DSL" %}
+{% code title="build.gradle.kts" %}
+```kts
+dependencies {
+    implementation("com.socketio4j:netty-socketio-spring-boot-starter:$socketioSpringBootStarterVersion")
+}
 ```
+{% endcode %}
+{% endtab %}
+{% endtabs %}
 
+### Quarkus
 
-
-***
-
-## JSON Serialization
-
-| Property      | Default       | Description              |
-| ------------- | ------------- | ------------------------ |
-| `jsonSupport` | Auto-detected | Jackson-based by default |
-
-```java
-config.setJsonSupport(new JacksonJsonSupport());
+{% tabs %}
+{% tab title="Maven" %}
+{% code title="pom.xml" %}
+```xml
+<dependency>
+  <groupId>com.socketio4j</groupId>
+  <artifactId>netty-socketio-quarkus</artifactId>
+  <version>{$socketio.quarkus.version}</version>
+</dependency>
 ```
+{% endcode %}
+{% endtab %}
 
-
-
-***
-
-## Authorization
-
-| Property                | Default   | Description             |
-| ----------------------- | --------- | ----------------------- |
-| `authorizationListener` | Allow all | Handshake authorization |
-
-```java
-config.setAuthorizationListener(data -> {
-    return AuthorizationResult.SUCCESS;
-});
+{% tab title="Gradle - Groovy DSL" %}
+{% code title="build.gradle" %}
+```groovy
+dependencies {
+    implementation "com.socketio4j:netty-socketio-quarkus:${socketioQuarkusVersion}"
+}
 ```
+{% endcode %}
+{% endtab %}
 
-
-
-***
-
-## Exception Handling
-
-| Property            | Default                    | Description           |
-| ------------------- | -------------------------- | --------------------- |
-| `exceptionListener` | `DefaultExceptionListener` | Global exception hook |
-
-```java
-config.setExceptionListener(new ExceptionListener() {
-    @Override
-    public void onEventException(Exception e, Object... args) {
-        log.error("Socket.IO error", e);
-    }
-});
+{% tab title="Gradle - Kotlin DSL" %}
+{% code title="build.gradle.kts" %}
+```kts
+dependencies {
+    implementation("com.socketio4j:netty-socketio-quarkus:$socketioQuarkusVersion")
+}
 ```
+{% endcode %}
+{% endtab %}
+{% endtabs %}
 
+### Micronaut
 
-
-***
-
-## Store / Clustering
-
-```java
-config.setStoreFactory(new RedisStoreFactory(redissonClient));
+{% tabs %}
+{% tab title="Maven" %}
+{% code title="pom.xml" %}
+```xml
+<dependency>
+  <groupId>com.socketio4j</groupId>
+  <artifactId>netty-socketio-micronaut</artifactId>
+  <version>{$socketio.micronaut.version}</version>
+</dependency>
 ```
+{% endcode %}
+{% endtab %}
 
-{% hint style="info" %}
-Please check [Adapters](https://app.gitbook.com/o/shMwc485bv7qtDWf0s0D/s/vM0fEesNQnh9fdpchiWm/) Page for detailed explanation.
-{% endhint %}
-
-
-
-***
-
-## SSL / TLS
-
-```java
-SocketSslConfig ssl = new SocketSslConfig();
-ssl.setKeyStore("keystore.jks");
-ssl.setKeyStorePassword("changeit");
-/**
-//only uses when mTLS/zero-trust scenarios not usually for wss
-ssl.setTrustStore("truststore.jks");
-ssl.setTrustStorePassword("changeit");
-*/
-config.setSocketSslConfig(ssl);
+{% tab title="Gradle - Groovy DSL" %}
+{% code title="build.gradle" %}
+```groovy
+dependencies {
+    implementation "com.socketio4j:netty-socketio-micronaut:${socketioMicronautVersion}"
+}
 ```
+{% endcode %}
+{% endtab %}
 
-
-
-***
-
-## HTTP Decoder Tuning
-
-| Property               | Default       |
-| ---------------------- | ------------- |
-| `maxInitialLineLength` | Netty default |
-| `maxHeaderSize`        | Netty default |
-| `maxChunkSize`         | Netty default |
-
-```java
-HttpRequestDecoderConfiguration http = new HttpRequestDecoderConfiguration();
-http.setMaxHeaderSize(16 * 1024);
-config.setHttpRequestDecoderConfiguration(http);
+{% tab title="Gradle - Kotlin DSL" %}
+{% code title="build.gradle.kts" %}
+```kts
+dependencies {
+    implementation("com.socketio4j:netty-socketio-micronaut:$socketioMicronautVersion")
+}
 ```
+{% endcode %}
+{% endtab %}
+{% endtabs %}
 
-
-
-***
-
-{% hint style="info" %}
-📌 Tip: Configuration is cloned internally for immutability. Treat it as write-once before server start.
-{% endhint %}
