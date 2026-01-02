@@ -1,4 +1,3 @@
 # Table of contents
 
-* [Getting Started](README.md)
-* [Version Policy](version-policy.md)
+* [API docs](README.md)
