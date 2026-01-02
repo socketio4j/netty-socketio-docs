@@ -52,6 +52,10 @@ Always stop the server gracefully during shutdown.
 server.stop();
 ```
 
+{% hint style="info" %}
+socketio4j adds shutdown hook after the server started, it gracefully stops the server in certain scenarios, not all. It is always recommended to stop the server explicitly.
+{% endhint %}
+
 ## Complete Example
 
 {% code title="Server.java" %}
@@ -62,7 +66,9 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public class SocketIoServerMain {
+    
     private static final Logger log = LoggerFactory.getLogger(SocketIoServerMain.class);
+    
     public static void main(String[] args) throws Exception {
         // Create configuration
         Configuration config = new Configuration();
