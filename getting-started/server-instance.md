@@ -58,11 +58,12 @@ server.stop();
 ```java
 import com.socketio4j.socketio.Configuration;
 import com.socketio4j.socketio.SocketIOServer;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class SocketIoServerMain {
-
+    private static final Logger log = LoggerFactory.getLogger(SocketIoServerMain.class);
     public static void main(String[] args) throws Exception {
-
         // Create configuration
         Configuration config = new Configuration();
         config.setHostname("localhost");
@@ -70,16 +71,22 @@ public class SocketIoServerMain {
 
         // Create server
         SocketIOServer server = new SocketIOServer(config);
-
+        
+        server.addConnectListener(client -> {
+            log.info("[/] connected -> " + client.getSessionId());
+        });
+        server.addDisconnectListener(client -> {
+            log.info("[/] disconnected -> " + client.getSessionId());
+        });
+        
+        server.addEventListener("hi", String.class, (client, data, ack) -> {
+            //listen to "reply" in client
+            log.info("received data : " + data);
+            client.sendEvent("reply", "hello");
+        });
         // Start server
         server.start();
-        System.out.println("Socket.IO server started on port 9092");
-
-        // Graceful shutdown
-        Runtime.getRuntime().addShutdownHook(new Thread(() -> {
-            System.out.println("Stopping Socket.IO server...");
-            server.stop();
-        }));
+        log.info("Socket.IO server started on port 9092");
 
         // Keep JVM alive
         Thread.currentThread().join();
