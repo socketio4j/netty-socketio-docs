@@ -95,22 +95,28 @@ public final class BasicServer {
 
 //package com.socketio4j.examples.core;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import com.socketio4j.socketio.Configuration;
 import com.socketio4j.socketio.SocketIOServer;
 import com.socketio4j.socketio.SocketIOClient;
 
 public final class BasicServer {
-
+    
+    private static final Logger log = LoggerFactory.getLogger(BasicServer.class);
+    
     public static void main(String[] args) {
 
         Configuration config = new Configuration();
         config.setHostname("0.0.0.0");
         config.setPort(9092);
-
+        config.setAckMode(AckMode.MANUAL);
+        
         SocketIOServer server = new SocketIOServer(config);
 
         server.addConnectListener(client -> {
-            System.out.println("Connected: " + client.getSessionId());
+            log.info("Connected: " + client.getSessionId());
 
             // Join room via query param: ?room=room1
             String room = client.getHandshakeData()
@@ -118,12 +124,12 @@ public final class BasicServer {
 
             if (room != null) {
                 client.joinRoom(room);
-                System.out.println("Joined room: " + room);
+                log.info("Joined room: " + room);
             }
         });
 
         server.addDisconnectListener(client ->
-                System.out.println("Disconnected: " + client.getSessionId())
+                log.info("Disconnected: " + client.getSessionId())
         );
 
         server.addEventListener(
@@ -131,7 +137,7 @@ public final class BasicServer {
                 String.class,
                 (SocketIOClient client, String data, var ack) -> {
 
-                    System.out.println("Received: " + data);
+                    log.info("Received: " + data);
 
                     // Broadcast to all clients
                     server.getBroadcastOperations()
@@ -142,11 +148,10 @@ public final class BasicServer {
         );
 
         server.start();
-        System.out.println("SocketIO4J server started on :9092");
-
-        Runtime.getRuntime().addShutdownHook(
-                new Thread(server::stop)
-        );
+        log.info("SocketIO4J server started on :9092");
+        
+        // Keep JVM alive
+        Thread.currentThread().join();
     }
 }
 
