@@ -89,6 +89,10 @@ public class SocketIoServerMain {
 ```
 {% endcode %}
 
+{% hint style="info" %}
+Check [Events](https://app.gitbook.com/o/shMwc485bv7qtDWf0s0D/s/mZhTHTqTlv7AiApMtIxm/ "mention")for event handling related documentation&#x20;
+{% endhint %}
+
 ## Notes
 
 * `hostname` is optional. If not set, the server binds to all interfaces (`0.0.0.0` / `::0`).
