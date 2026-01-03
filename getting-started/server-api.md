@@ -1,26 +1,74 @@
+---
+icon: webhook
+---
+
 # Server API
 
 ### Server Start & Stop Listeners
 
-#### Add Start Listener
+Socketio4j allows you to register listeners for server **start** and **stop** events.\
+Listeners are executed safely with **exception isolation**, ensuring failures in one listener do not affect others or the server lifecycle.
+
+***
+
+#### Start Listener
+
+**Add Start Listener**
 
 ```java
-server.addStartListener(s -> {
-    System.out.println("Server started on " + s.getConfiguration().getPort());
-});
+ServerStartListener startListener = s -> {
+    System.out.println(
+        "Server started on " + s.getConfiguration().getPort()
+    );
+};
+
+server.addStartListener(startListener);
+```
+
+**Remove Start Listener**
+
+```java
+server.removeStartListener(startListener);
 ```
 
 ***
 
-#### Add Stop Listener
+#### Stop Listener
+
+**Add Stop Listener**
 
 ```java
-server.addStopListener(s -> {
+ServerStopListener stopListener = s -> {
     System.out.println("Server stopped");
-});
+};
+
+server.addStopListener(stopListener);
 ```
 
-Listeners are executed safely with exception isolation.
+**Remove Stop Listener**
+
+```java
+server.removeStopListener(stopListener);
+```
+
+***
+
+#### Execution Guarantees
+
+* Start listeners are invoked after the server has successfully started
+* Stop listeners are invoked during graceful shutdown
+* Each listener is executed with **exception isolation**
+* Exceptions thrown by listeners do **not** interrupt:
+  * Server start or shutdown
+  * Other registered listeners
+
+***
+
+#### Best Practices
+
+* Keep listener logic lightweight and non-blocking
+* Avoid long-running or blocking operations inside listeners
+* Use listeners for logging, metrics, and coordination only
 
 ***
 
@@ -220,3 +268,7 @@ server.addListeners(new ChatEventHandler(), ChatEventHandler.class);
 ```
 
 Supports annotation-based listeners.
+
+{% hint style="info" %}
+Check [Events](https://app.gitbook.com/o/shMwc485bv7qtDWf0s0D/s/mZhTHTqTlv7AiApMtIxm/) for more details
+{% endhint %}
