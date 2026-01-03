@@ -4,6 +4,7 @@
 
 * [Server Configuration](README.md)
 * [Server Instance](getting-started/server-instance.md)
+* [Server API](getting-started/server-api.md)
 
 ## Server Examples
 
