@@ -9,8 +9,6 @@ icon: webhook
 Socketio4j allows you to register listeners for server **start** and **stop** events.\
 Listeners are executed safely with **exception isolation**, ensuring failures in one listener do not affect others or the server lifecycle.
 
-***
-
 #### Start Listener
 
 **Add Start Listener**
@@ -31,8 +29,6 @@ server.addStartListener(startListener);
 server.removeStartListener(startListener);
 ```
 
-***
-
 #### Stop Listener
 
 **Add Stop Listener**
@@ -51,8 +47,6 @@ server.addStopListener(stopListener);
 server.removeStopListener(stopListener);
 ```
 
-***
-
 #### Execution Guarantees
 
 * Start listeners are invoked after the server has successfully started
@@ -62,15 +56,11 @@ server.removeStopListener(stopListener);
   * Server start or shutdown
   * Other registered listeners
 
-***
-
 #### Best Practices
 
 * Keep listener logic lightweight and non-blocking
 * Avoid long-running or blocking operations inside listeners
 * Use listeners for logging, metrics, and coordination only
-
-***
 
 ### Namespaces
 
@@ -78,15 +68,11 @@ server.removeStopListener(stopListener);
 
 The root namespace (`"/"`) is created automatically.
 
-***
-
 #### Add Namespace
 
 ```java
 SocketIONamespace chat = server.addNamespace("/chat");
 ```
-
-***
 
 #### Get Namespace
 
@@ -94,23 +80,17 @@ SocketIONamespace chat = server.addNamespace("/chat");
 SocketIONamespace chat = server.getNamespace("/chat");
 ```
 
-***
-
 #### Remove Namespace
 
 ```java
 server.removeNamespace("/chat");
 ```
 
-***
-
 #### Get All Namespaces
 
 ```java
 Collection<SocketIONamespace> namespaces = server.getAllNamespaces();
 ```
-
-***
 
 ### Clients
 
@@ -120,8 +100,6 @@ Collection<SocketIONamespace> namespaces = server.getAllNamespaces();
 Collection<SocketIOClient> clients = server.getAllClients();
 ```
 
-***
-
 #### Get Client by Session ID
 
 ```java
@@ -129,8 +107,6 @@ SocketIOClient client = server.getClient(uuid);
 ```
 
 Returns `null` if not found.
-
-***
 
 ### Broadcasting
 
@@ -141,16 +117,12 @@ server.getBroadcastOperations()
       .sendEvent("announcement", "Hello everyone");
 ```
 
-***
-
 #### Broadcast to Rooms (Across All Namespaces)
 
 ```java
 server.getRoomOperations("room1", "room2")
       .sendEvent("message", "Hello rooms");
 ```
-
-***
 
 ### Event Listeners (Default Namespace)
 
@@ -162,8 +134,6 @@ server.addEventListener("chat", Message.class, (client, data, ack) -> {
 });
 ```
 
-***
-
 #### Multi-Type Event Listener
 
 ```java
@@ -174,8 +144,6 @@ server.addMultiTypeEventListener(
     ChatMessage.class
 );
 ```
-
-***
 
 #### Catch-All Event Listener
 
@@ -196,8 +164,6 @@ Aliases:
 * `onAny(...)`
 * `offAny(...)`
 
-***
-
 #### Event Interceptor
 
 ```java
@@ -208,15 +174,11 @@ server.addEventInterceptor((client, event, args) -> {
 
 Used for validation, filtering, or security checks.
 
-***
-
 #### Remove All Event Listeners
 
 ```java
 server.removeAllListeners("eventName");
 ```
-
-***
 
 ### Connection Lifecycle Listeners
 
@@ -228,8 +190,6 @@ server.addConnectListener(client -> {
 });
 ```
 
-***
-
 #### Disconnect Listener
 
 ```java
@@ -237,8 +197,6 @@ server.addDisconnectListener(client -> {
     System.out.println("Disconnected");
 });
 ```
-
-***
 
 #### Ping / Pong Listeners
 
@@ -249,8 +207,6 @@ server.addPongListener(client -> {});
 
 Useful for monitoring connection health.
 
-***
-
 ### Listener Auto-Registration
 
 #### Register Listener Object
@@ -258,8 +214,6 @@ Useful for monitoring connection health.
 ```java
 server.addListeners(new ChatEventHandler());
 ```
-
-***
 
 #### Register with Explicit Class
 
