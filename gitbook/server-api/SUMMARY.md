@@ -8,7 +8,7 @@
 
 ## Server Examples
 
-* [Core Java](server-examples/editor.md)
+* [Core Java](server-examples/core-java.md)
 * [Spring Boot](server-examples/spring-boot.md)
 * [Quarkus](server-examples/quarkus.md)
 * [Micronaut](server-examples/micronaut.md)
