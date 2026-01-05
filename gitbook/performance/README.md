@@ -51,12 +51,6 @@ Reference : [https://github.com/mrniko/netty-socketio](https://github.com/mrniko
 * Efficient memory management
 * Minimal garbage collection pressure
 
-### Performance Testing  <a href="#performance-testing" id="performance-testing"></a>
-
-The project includes a smoke test module that runs daily performance tests:
-
-* [netty-socketio-smoke-test](https://github.com/socketio4j/netty-socketio/tree/main/netty-socketio-smoke-test)
-
 #### Running Performance Tests  <a href="#running-performance-tests" id="running-performance-tests"></a>
 
 ```
