@@ -1,0 +1,91 @@
+name: Smoke Test
+
+on:
+  workflow_dispatch:
+    inputs:
+      netty_socketio_version:
+        description: 'Netty-SocketIO version to test (e.g., 3.0.1, 4.0.0-SNAPSHOT)'
+        required: true
+        default: '4.0.0-SNAPSHOT'
+        type: string
+      jdk_version:
+        description: 'JDK version to use (e.g., 11, 17, 21)'
+        required: true
+        default: '25'
+        type: choice
+        options:
+          - '8'
+          - '11'
+          - '17'
+          - '21'
+          - '25'
+      port:
+        description: 'Server port'
+        required: false
+        default: '8899'
+        type: string
+      client_count:
+        description: 'Number of concurrent clients'
+        required: false
+        default: '10'
+        type: string
+      each_msg_count:
+        description: 'Messages per client'
+        required: false
+        default: '10000'
+        type: string
+      each_msg_size:
+        description: 'Message size in bytes'
+        required: false
+        default: '32'
+        type: string
+
+jobs:
+  smoke-test:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Set up JDK ${{ inputs.jdk_version }}
+        uses: actions/setup-java@v4
+        with:
+          java-version: ${{ inputs.jdk_version }}
+          distribution: 'temurin'
+          cache: 'maven'
+
+      - name: Cache Maven dependencies
+        uses: actions/cache@v4
+        with:
+          path: ~/.m2
+          key: ${{ runner.os }}-m2-${{ hashFiles('smoke-test/pom.xml') }}
+          restore-keys: ${{ runner.os }}-m2-
+
+      - name: Make run-test.sh executable
+        working-directory: smoke-test
+        run: chmod +x run-test.sh
+
+      - name: Run smoke test
+        working-directory: smoke-test
+        run: |
+          ./run-test.sh ${{ inputs.netty_socketio_version }} ${{ inputs.port }} ${{ inputs.client_count }} ${{ inputs.each_msg_count }} ${{ inputs.each_msg_size }}
+
+      - name: Commit performance report and results
+        if: success()
+        run: |
+          git config --local user.email "github-actions[bot]@users.noreply.github.com"
+          git config --local user.name "github-actions[bot]"
+          git add gitbook/performance/performance-report.md
+          git add smoke-test/performance-results/*.json
+          if ! git diff --staged --quiet; then
+            git commit -m "Update performance report: Netty-SocketIO ${{ inputs.netty_socketio_version }} on JDK ${{ inputs.jdk_version }}"
+            git push origin HEAD:main
+          else
+            echo "No changes to commit"
+          fi
