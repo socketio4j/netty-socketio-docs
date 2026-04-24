@@ -22,10 +22,6 @@ This report contains daily performance test results for Netty SocketIO.
 | 2026-04-24 11:23:14 | 21.0.10 | Linux 6.17.0-1010-azure | 4 | 200,883.89 | 1409.35 | 1911 | 0.0000 | 256 | -Xms256m -Xmx256m -XX:+UseG1GC -XX:+AlwaysPreTouch... | 4.0.0-alpha | 2489 |
 | 2026-04-24 11:19:53 | 17.0.18 | Linux 6.17.0-1010-azure | 4 | 206,868.02 | 1394.42 | 2175 | 0.0000 | 256 | -Xms256m -Xmx256m -XX:+UseG1GC -XX:+AlwaysPreTouch... | 4.0.0-alpha | 2417 |
 | 2026-04-24 11:18:17 | 11.0.30 | Linux 6.17.0-1010-azure | 4 | 196,540.88 | 1448.66 | 2047 | 0.0000 | 256 | -Xms256m -Xmx256m -XX:+UseG1GC -XX:+AlwaysPreTouch... | 4.0.0-alpha | 2544 |
-| 2026-04-24 11:14:58 | 21.0.10 | Linux 6.17.0-1010-azure | 4 | 111,234.71 | 526.36 | 763 | 0.0000 | 256 | -Xms256m -Xmx256m -XX:+UseG1GC -XX:+AlwaysPreTouch... | 4.0.0-alpha | 899 |
-| 2026-04-24 11:12:46 | 17.0.18 | Linux 6.17.0-1010-azure | 4 | 122,249.39 | 418.74 | 651 | 0.0000 | 256 | -Xms256m -Xmx256m -XX:+UseG1GC -XX:+AlwaysPreTouch... | 4.0.0-alpha | 818 |
-| 2026-04-24 11:11:13 | 11.0.30 | Linux 6.17.0-1010-azure | 4 | 153,374.23 | 380.40 | 559 | 0.0000 | 256 | -Xms256m -Xmx256m -XX:+UseG1GC -XX:+AlwaysPreTouch... | 4.0.0-alpha | 652 |
-| 2026-01-05 09:26:36 | 25.0.1 | Mac OS X 26.2 | 16 | 323,624.60 | 35.10 | 126 | 0.0000 | 256 | -Xms256m -Xmx256m -XX:+UseG1GC -XX:+AlwaysPreTouch... | 4.0.0-SNAPSHOT | 309 |
 | 2025-11-11 07:46:28 | 25.0.1 | Linux 6.11.0-1018-azure | 4 | 220,264.32 | 1308.03 | 1911 | 0.0000 | 256 | -Xms256m -Xmx256m -XX:+UseG1GC -XX:+AlwaysPreTouch | 3.0.1 | 2270 |
 | 2025-11-11 07:41:07 | 21.0.9 | Linux 6.11.0-1018-azure | 4 | 198,886.24 | 1399.18 | 1975 | 0.0000 | 256 | -Xms256m -Xmx256m -XX:+UseG1GC -XX:+AlwaysPreTouch | 3.0.1 | 2514 |
 | 2025-11-11 07:31:13 | 17.0.17 | Linux 6.11.0-1018-azure | 4 | 202,593.19 | 1481.27 | 2159 | 0.0000 | 256 | -Xms256m -Xmx256m -XX:+UseG1GC -XX:+AlwaysPreTouch | 3.0.1 | 2468 |
