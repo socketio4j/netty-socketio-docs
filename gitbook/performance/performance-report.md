@@ -5,7 +5,7 @@ This report contains daily performance test results for Netty SocketIO.
 ## Test Configuration
 - Server Port: 8899
 - Client Count: 10
-- Messages per Client: 10000
+- Messages per Client: 50000
 - Message Size: 32 bytes
 - Server Max Memory: 256 MB
 
@@ -19,6 +19,7 @@ This report contains daily performance test results for Netty SocketIO.
 
 | Date | Java Version | OS | CPU Cores | Messages/sec | Avg Latency (ms) | P99 Latency (ms) | Error Rate (%) | Max Heap (MB) | JVM Args | Version | Test Duration (ms) |
 |------|-------------|----|-----------|--------------|------------------|------------------|----------------|---------------|-----------|---------|-------------------|
+| 2026-04-24 11:18:17 | 11.0.30 | Linux 6.17.0-1010-azure | 4 | 196,540.88 | 1448.66 | 2047 | 0.0000 | 256 | -Xms256m -Xmx256m -XX:+UseG1GC -XX:+AlwaysPreTouch... | 4.0.0-alpha | 2544 |
 | 2026-04-24 11:14:58 | 21.0.10 | Linux 6.17.0-1010-azure | 4 | 111,234.71 | 526.36 | 763 | 0.0000 | 256 | -Xms256m -Xmx256m -XX:+UseG1GC -XX:+AlwaysPreTouch... | 4.0.0-alpha | 899 |
 | 2026-04-24 11:12:46 | 17.0.18 | Linux 6.17.0-1010-azure | 4 | 122,249.39 | 418.74 | 651 | 0.0000 | 256 | -Xms256m -Xmx256m -XX:+UseG1GC -XX:+AlwaysPreTouch... | 4.0.0-alpha | 818 |
 | 2026-04-24 11:11:13 | 11.0.30 | Linux 6.17.0-1010-azure | 4 | 153,374.23 | 380.40 | 559 | 0.0000 | 256 | -Xms256m -Xmx256m -XX:+UseG1GC -XX:+AlwaysPreTouch... | 4.0.0-alpha | 652 |
