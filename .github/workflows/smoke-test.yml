@@ -39,6 +39,55 @@ on:
         required: false
         default: '32'
         type: string
+      mode:
+        description: 'Smoke test mode'
+        required: false
+        default: 'standalone'
+        type: choice
+        options:
+          - 'standalone'
+          - 'distributed'
+          - 'both'
+      test_duration_seconds:
+        description: 'Duration mode seconds. Use 0 to run each_msg_count instead.'
+        required: false
+        default: '0'
+        type: string
+      client_rounds_per_second:
+        description: 'Duration mode rounds per second. One round sends one message per client.'
+        required: false
+        default: '1'
+        type: string
+      client_drain_timeout_seconds:
+        description: 'How long to wait for responses after sending finishes'
+        required: false
+        default: '600'
+        type: string
+      memory_sample_ms:
+        description: 'Server memory sampling interval in milliseconds'
+        required: false
+        default: '1000'
+        type: string
+      post_gc_wait_ms:
+        description: 'Wait time after explicit full GC before post-GC sample'
+        required: false
+        default: '60000'
+        type: string
+      runner_jvm_opts:
+        description: 'Runner JVM options'
+        required: false
+        default: '-Xms1g -Xmx4g'
+        type: string
+      server_jvm_opts:
+        description: 'Server JVM options'
+        required: false
+        default: '-Xms4g -Xmx4g -XX:+UseG1GC -XX:+AlwaysPreTouch'
+        type: string
+      redis_url:
+        description: 'Redis URL for distributed mode'
+        required: false
+        default: 'redis://127.0.0.1:6379'
+        type: string
 
 jobs:
   smoke-test:
@@ -69,12 +118,81 @@ jobs:
 
       - name: Make run-test.sh executable
         working-directory: smoke-test
-        run: chmod +x run-test.sh
+        run: |
+          chmod +x run-test.sh
+          chmod +x scripts/generate-memory-chart.py
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.x'
+
+      - name: Install chart dependencies
+        run: python -m pip install --upgrade pillow
 
       - name: Run smoke test
         working-directory: smoke-test
         run: |
-          ./run-test.sh ${{ inputs.netty_socketio_version }} ${{ inputs.port }} ${{ inputs.client_count }} ${{ inputs.each_msg_count }} ${{ inputs.each_msg_size }}
+          set -euo pipefail
+
+          if [ "${{ inputs.mode }}" = "both" ]; then
+            MODES="standalone distributed"
+          else
+            MODES="${{ inputs.mode }}"
+          fi
+
+          BASE_PORT=${{ inputs.port }}
+          INDEX=0
+          for MODE in $MODES; do
+            PORT=$((BASE_PORT + INDEX * 10))
+            INDEX=$((INDEX + 1))
+
+            if [ "$MODE" = "distributed" ]; then
+              docker rm -f socketio-smoke-redis >/dev/null 2>&1 || true
+              docker run -d --name socketio-smoke-redis -p 6379:6379 redis:7-alpine
+              for i in {1..30}; do
+                if docker exec socketio-smoke-redis redis-cli ping | grep -q PONG; then
+                  break
+                fi
+                sleep 1
+              done
+            fi
+
+            RUNNER_JVM_OPTS="${{ inputs.runner_jvm_opts }}" \
+            SERVER_JVM_OPTS="${{ inputs.server_jvm_opts }}" \
+            MEMORY_SAMPLE_MS="${{ inputs.memory_sample_ms }}" \
+            POST_GC_WAIT_MS="${{ inputs.post_gc_wait_ms }}" \
+            TEST_DURATION_SECONDS="${{ inputs.test_duration_seconds }}" \
+            CLIENT_ROUNDS_PER_SECOND="${{ inputs.client_rounds_per_second }}" \
+            CLIENT_DRAIN_TIMEOUT_SECONDS="${{ inputs.client_drain_timeout_seconds }}" \
+            ./run-test.sh \
+              "${{ inputs.netty_socketio_version }}" \
+              "$PORT" \
+              "${{ inputs.client_count }}" \
+              "${{ inputs.each_msg_count }}" \
+              "${{ inputs.each_msg_size }}" \
+              "$MODE" \
+              "${{ inputs.redis_url }}"
+
+            RESULT_JSON=$(ls -t "performance-results/performance-result-${MODE}-"*.json | head -n 1)
+            python3 scripts/generate-memory-chart.py "$RESULT_JSON"
+
+            if [ "$MODE" = "distributed" ]; then
+              docker rm -f socketio-smoke-redis >/dev/null 2>&1 || true
+            fi
+          done
+
+      - name: Upload performance artifacts
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: smoke-test-results-${{ inputs.mode }}-jdk${{ inputs.jdk_version }}
+          path: |
+            smoke-test/performance-results/*.json
+            smoke-test/performance-results/*.csv
+            smoke-test/performance-results/*.png
+            gitbook/performance/performance-report.md
+          if-no-files-found: ignore
 
       - name: Commit performance report and results
         if: success()
@@ -83,9 +201,11 @@ jobs:
           git config --local user.name "github-actions[bot]"
           git add gitbook/performance/performance-report.md
           git add smoke-test/performance-results/*.json
+          git add smoke-test/performance-results/*.csv
+          git add smoke-test/performance-results/*.png
           if ! git diff --staged --quiet; then
             git commit -m "Update performance report: Netty-SocketIO ${{ inputs.netty_socketio_version }} on JDK ${{ inputs.jdk_version }}"
-            git push origin HEAD:main
+            git push origin HEAD:${{ github.ref_name }}
           else
             echo "No changes to commit"
           fi

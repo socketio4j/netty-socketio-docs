@@ -65,6 +65,7 @@
     <socketio-client.version>2.1.2</socketio-client.version>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <awaitility.version>4.3.0</awaitility.version>
+    <redisson.version>4.1.0</redisson.version>
     <netty.socketio.version>3.0.1</netty.socketio.version>
     <logback.version>1.5.23</logback.version>
   </properties>

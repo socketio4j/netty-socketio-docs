@@ -59,7 +59,7 @@ public class ClientMetrics {
         totalErrors.increment();
     }
 
-    public void recordLatency(long latencyMs) {
+    public synchronized void recordLatency(long latencyMs) {
         // Record in histogram
         latencyHistogram.recordValue(latencyMs);
     }
@@ -85,19 +85,19 @@ public class ClientMetrics {
         return totalErrors.sum();
     }
 
-    public long getMinLatency() {
+    public synchronized long getMinLatency() {
         return latencyHistogram.getMinValue();
     }
 
-    public long getMaxLatency() {
+    public synchronized long getMaxLatency() {
         return latencyHistogram.getMaxValue();
     }
 
-    public double getAverageLatency() {
+    public synchronized double getAverageLatency() {
         return latencyHistogram.getMean();
     }
 
-    public long getLatencyPercentile(double percentile) {
+    public synchronized long getLatencyPercentile(double percentile) {
         if (latencyHistogram.getTotalCount() == 0) {
             return 0;
         }
@@ -144,7 +144,7 @@ public class ClientMetrics {
         return sent == 0 ? 0.0 : (double) (sent - received) / sent;
     }
 
-    public void reset() {
+    public synchronized void reset() {
         totalMessagesSent.reset();
         totalMessagesReceived.reset();
         totalBytesSent.reset();

@@ -18,7 +18,9 @@ package com.socketio4j.socketio.smoketest;
 
 import java.net.URI;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
+import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -26,170 +28,347 @@ import java.util.concurrent.atomic.AtomicInteger;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.github.javafaker.Faker;
+import org.awaitility.core.ConditionTimeoutException;
 
-import io.socket.client.IO;
-import io.socket.client.Socket;
+import io.netty.bootstrap.Bootstrap;
+import io.netty.channel.Channel;
+import io.netty.channel.ChannelHandlerContext;
+import io.netty.channel.ChannelInitializer;
+import io.netty.channel.ChannelOption;
+import io.netty.channel.EventLoopGroup;
+import io.netty.channel.SimpleChannelInboundHandler;
+import io.netty.channel.nio.NioEventLoopGroup;
+import io.netty.channel.socket.SocketChannel;
+import io.netty.channel.socket.nio.NioSocketChannel;
+import io.netty.handler.codec.http.DefaultHttpHeaders;
+import io.netty.handler.codec.http.HttpClientCodec;
+import io.netty.handler.codec.http.HttpObjectAggregator;
+import io.netty.handler.codec.http.websocketx.CloseWebSocketFrame;
+import io.netty.handler.codec.http.websocketx.TextWebSocketFrame;
+import io.netty.handler.codec.http.websocketx.WebSocketClientHandshakeException;
+import io.netty.handler.codec.http.websocketx.WebSocketClientProtocolHandler;
+import io.netty.handler.codec.http.websocketx.WebSocketFrame;
+import io.netty.handler.codec.http.websocketx.WebSocketVersion;
 
 import static org.awaitility.Awaitility.await;
 
 /**
- * SocketIO Client for smoke testing.
- * Sends messages and measures performance.
+ * Netty-based Socket.IO load client. It speaks the small Engine.IO/Socket.IO
+ * subset needed by the smoke tests and avoids one blocking reader thread per
+ * connection, which is required for 10k local connections.
  */
+@SuppressWarnings("deprecation")
 public class ClientMain {
-    
+
     private static final Logger log = LoggerFactory.getLogger(ClientMain.class);
-    private static final ObjectMapper mapper = new ObjectMapper();
-    private static final Faker faker = new Faker();
-    
-    private final List<Socket> clients = new ArrayList<>();
+
+    private final List<Channel> channels = new ArrayList<>();
+    private final List<String> clientRooms = new ArrayList<>();
     private final ClientMetrics metrics;
-    private final AtomicBoolean running = new AtomicBoolean(false);
     private final AtomicInteger connectedCount = new AtomicInteger(0);
+    private final AtomicInteger joinedCount = new AtomicInteger(0);
     private final SystemInfo systemInfo = new SystemInfo();
-    private final int port;
+    private final List<Integer> ports;
     private final int clientCount;
     private final int eachMsgCount;
     private final int eachMsgSize;
+    private final SmokeTestMode mode;
+    private CountDownLatch connectLatch;
+    private CountDownLatch joinLatch;
+    private EventLoopGroup group;
 
     public ClientMain(int port, int clientCount, int eachMsgCount, int eachMsgSize, ClientMetrics metrics) throws Exception {
-        this.port = port;
+        this(Arrays.asList(port), clientCount, eachMsgCount, eachMsgSize, SmokeTestMode.STANDALONE, metrics);
+    }
+
+    public ClientMain(List<Integer> ports, int clientCount, int eachMsgCount, int eachMsgSize,
+                      SmokeTestMode mode, ClientMetrics metrics) throws Exception {
+        this.ports = ports;
         this.clientCount = clientCount;
         this.eachMsgCount = eachMsgCount;
         this.eachMsgSize = eachMsgSize;
+        this.mode = mode;
         this.metrics = metrics;
+        if (mode == SmokeTestMode.DISTRIBUTED && clientCount < 2) {
+            throw new IllegalArgumentException("Distributed smoke test requires at least 2 clients");
+        }
     }
-    
+
     public void start() throws Exception {
         systemInfo.printSystemInfo();
-        
-        // Connect all clients
-        connectClients();
-        
-        // Wait for all clients to connect
-        long timeout = System.currentTimeMillis() + 30000; // 30 seconds timeout
-        while (connectedCount.get() < clientCount && System.currentTimeMillis() < timeout) {
-            try {
-                Thread.sleep(100);
-            } catch (InterruptedException e) {
-                Thread.currentThread().interrupt();
-                break;
+        group = new NioEventLoopGroup(Integer.getInteger("smoke.client.eventloop.threads",
+                Math.max(4, Runtime.getRuntime().availableProcessors() * 2)));
+
+        try {
+            connectClients();
+            if (!connectLatch.await(connectTimeoutSeconds(), TimeUnit.SECONDS)) {
+                throw new RuntimeException("Failed to connect all clients. Connected: " + connectedCount.get() + "/" + clientCount);
             }
+            if (mode == SmokeTestMode.DISTRIBUTED && !joinLatch.await(connectTimeoutSeconds(), TimeUnit.SECONDS)) {
+                throw new RuntimeException("Failed to join all clients to relay rooms. Joined: " + joinedCount.get() + "/" + clientCount);
+            }
+
+            log.info("All {} clients connected", clientCount);
+            startMessageSending();
+        } finally {
+            cleanup();
         }
-        
-        if (connectedCount.get() < clientCount) {
-            throw new RuntimeException("Failed to connect all clients. Connected: " + connectedCount.get() + "/" +clientCount);
-        }
-        
-        log.info("All {} clients connected", clientCount);
-        
-        // Start sending messages
-        startMessageSending();
-        
-        // Cleanup
-        cleanup();
     }
-    
+
     public ClientMetrics getMetrics() {
         return metrics;
     }
-    
-    private void connectClients() {
-        String serverUrl = String.format("http://127.0.0.1:%d", port);
-        
-        for (int i = 0; i < clientCount; i++) {
-            try {
-                IO.Options options = new IO.Options();
 
-                Socket client = IO.socket(URI.create(serverUrl), options);
-                clients.add(client);
-                log.info("Client {} connecting to {}", i, serverUrl);
-                client.connect();
-                int finalI = i;
-                client.on(Socket.EVENT_CONNECT, args -> {
-                    int count = connectedCount.incrementAndGet();
-                    log.info("Client {} connected (total connected: {})", finalI, count);
-                });
-                client.on(Socket.EVENT_DISCONNECT, args -> {
-                    int count = connectedCount.decrementAndGet();
-                    log.info("Client {} disconnected (total connected: {})", finalI, count);
-                });
-            } catch (Exception e) {
-                log.error("Failed to create client {}", i, e);
-                metrics.recordError();
-            }
+    private void connectClients() throws Exception {
+        connectLatch = new CountDownLatch(clientCount);
+        joinLatch = new CountDownLatch(mode == SmokeTestMode.DISTRIBUTED ? clientCount : 0);
+
+        for (int i = 0; i < clientCount; i++) {
+            final int clientIndex = i;
+            String room = "smoke-client-" + i;
+            int port = ports.get(i % ports.size());
+            URI uri = new URI("ws://127.0.0.1:" + port + "/socket.io/?EIO=4&transport=websocket");
+            clientRooms.add(room);
+
+            Bootstrap bootstrap = new Bootstrap();
+            bootstrap.group(group)
+                    .channel(NioSocketChannel.class)
+                    .option(ChannelOption.TCP_NODELAY, true)
+                    .handler(new ChannelInitializer<SocketChannel>() {
+                        @Override
+                        protected void initChannel(SocketChannel ch) {
+                            ch.pipeline().addLast(new HttpClientCodec());
+                            ch.pipeline().addLast(new HttpObjectAggregator(8192));
+                            ch.pipeline().addLast(new WebSocketClientProtocolHandler(
+                                    uri, WebSocketVersion.V13, null, true, new DefaultHttpHeaders(), 65536));
+                            ch.pipeline().addLast(new SocketIoLoadClientHandler(clientIndex, room));
+                        }
+                    });
+
+            Channel channel = bootstrap.connect(uri.getHost(), uri.getPort()).sync().channel();
+            channels.add(channel);
+            maybePauseConnectBatch(i + 1);
         }
     }
-    
+
     private void startMessageSending() throws InterruptedException {
-        running.set(true);
         metrics.start();
-        
-        Thread[] threads = new Thread[clientCount];
-        for (int i = 0; i < threads.length; i++) {
-            int finalI = i;
-            threads[i] = new Thread(() -> {
-                Socket socket = clients.get(finalI);
-                for (int j = 0; j < eachMsgCount; j++) {
-                    if (!running.get()) {
-                        break;
-                    }
-                    sendMessage(socket);
+        String message = generateMessage(eachMsgSize);
+        long durationSeconds = Long.getLong("smoke.test.duration.seconds", 0L);
+        if (durationSeconds > 0) {
+            int roundsPerSecond = Integer.getInteger("smoke.client.rounds.per.second", 1);
+            long intervalNanos = roundsPerSecond > 0
+                    ? TimeUnit.SECONDS.toNanos(1) / roundsPerSecond
+                    : 0;
+            long deadline = System.nanoTime() + TimeUnit.SECONDS.toNanos(durationSeconds);
+            long round = 0;
+            long nextRound = System.nanoTime();
+            while (System.nanoTime() < deadline) {
+                sendRound(message);
+                round++;
+                if (intervalNanos > 0) {
+                    nextRound += intervalNanos;
+                    sleepUntil(nextRound);
                 }
-            });
-        }
-        for (Thread thread : threads) {
-            thread.start();
-        }
-        for (Thread thread : threads) {
-            try {
-                thread.join();
-            } catch (InterruptedException e) {
-                Thread.currentThread().interrupt();
+                if (round % progressEvery() == 0) {
+                    log.info("Message rounds sent: {}, total messages: {}", round, metrics.getTotalMessagesSent());
+                }
+            }
+        } else {
+            for (int round = 0; round < eachMsgCount; round++) {
+                sendRound(message);
             }
         }
-        await().atMost(10, TimeUnit.MINUTES).until(() ->
-                metrics.getTotalMessagesSent() == metrics.getTotalMessagesReceived()
-        );
+
+        long drainTimeoutSeconds = Long.getLong("smoke.client.drain.timeout.seconds", 600L);
+        try {
+            await().atMost(drainTimeoutSeconds, TimeUnit.SECONDS).until(() ->
+                    metrics.getTotalMessagesSent() == metrics.getTotalMessagesReceived()
+            );
+        } catch (ConditionTimeoutException e) {
+            log.warn("Timed out waiting for message responses after {} seconds. Sent: {}, received: {}",
+                    drainTimeoutSeconds, metrics.getTotalMessagesSent(), metrics.getTotalMessagesReceived());
+        }
         metrics.stop();
         log.info(metrics.toString());
     }
-    
-    private void sendMessage(Socket client) {
+
+    private void sleepUntil(long deadlineNanos) throws InterruptedException {
+        long remaining;
+        while ((remaining = deadlineNanos - System.nanoTime()) > 0) {
+            TimeUnit.NANOSECONDS.sleep(Math.min(remaining, TimeUnit.MILLISECONDS.toNanos(10)));
+        }
+    }
+
+    private void sendRound(String message) {
+        for (int i = 0; i < channels.size(); i++) {
+            sendMessage(i, channels.get(i), message);
+        }
+    }
+
+    private void sendMessage(int clientIndex, Channel channel, String message) {
+        if (!channel.isActive()) {
+            metrics.recordError();
+            return;
+        }
+
+        long startTime = System.currentTimeMillis();
+        String payload = startTime + ":" + message;
+        String frame;
+        if (mode == SmokeTestMode.DISTRIBUTED) {
+            frame = socketIoEvent("relay", targetRoom(clientIndex) + ":" + payload);
+        } else {
+            frame = socketIoEvent("echo", payload);
+        }
+        metrics.recordMessageSent(message.length());
+        channel.writeAndFlush(new TextWebSocketFrame(frame));
+    }
+
+    private String generateMessage(int size) {
+        char[] chars = new char[size];
+        Arrays.fill(chars, 'x');
+        return new String(chars);
+    }
+
+    private String targetRoom(int clientIndex) {
+        int targetIndex;
+        if (clientIndex % 2 == 0) {
+            targetIndex = clientIndex + 1 < clientCount ? clientIndex + 1 : 1;
+        } else {
+            targetIndex = clientIndex - 1;
+        }
+        return clientRooms.get(targetIndex);
+    }
+
+    private void recordResponse(String data) {
+        int separator = data.indexOf(':');
+        if (separator <= 0) {
+            metrics.recordError();
+            return;
+        }
         try {
-            String message = generateMessage(eachMsgSize);
-            long startTime = System.currentTimeMillis();
-            
-            // Record message sent
-            metrics.recordMessageSent(message.length());
-            
-            // Send without ACK callback
-            client.emit("echo", startTime + ":" + message);
-            
-        } catch (Exception e) {
-            log.debug("Failed to send message", e);
+            long startTime = Long.parseLong(data.substring(0, separator));
+            metrics.recordLatency(System.currentTimeMillis() - startTime);
+            metrics.recordMessageReceived(data.length());
+        } catch (NumberFormatException e) {
             metrics.recordError();
         }
     }
-    
-    private String generateMessage(int size) {
-        return faker.lorem().characters(size);
+
+    private String socketIoEvent(String event, String data) {
+        return "42[\"" + event + "\",\"" + data + "\"]";
     }
-    
+
+    private long connectTimeoutSeconds() {
+        return Math.max(60, clientCount / 5);
+    }
+
+    private void logProgress(String label, int count) {
+        if (count == clientCount || count == 0 || count % progressEvery() == 0) {
+            log.info("{}: {}/{}", label, count, clientCount);
+        }
+    }
+
+    private int progressEvery() {
+        return Math.max(1, Integer.getInteger("smoke.client.progress.every", 1000));
+    }
+
+    private void maybePauseConnectBatch(int connectedAttempt) throws InterruptedException {
+        int batchSize = Integer.getInteger("smoke.client.connect.batch.size", 1000);
+        int batchPauseMs = Integer.getInteger("smoke.client.connect.batch.pause.ms", 100);
+        if (batchSize > 0 && batchPauseMs > 0 && connectedAttempt % batchSize == 0) {
+            Thread.sleep(batchPauseMs);
+        }
+    }
+
     private void cleanup() {
         log.info("Cleaning up clients...");
-        
-        for (Socket client : clients) {
-            try {
-                if (client.connected()) {
-                    client.disconnect();
-                }
-                client.close();
-            } catch (Exception e) {
-                log.debug("Error closing client", e);
+        for (Channel channel : channels) {
+            if (channel.isActive()) {
+                channel.writeAndFlush(new CloseWebSocketFrame());
             }
+            channel.close();
+        }
+        if (group != null) {
+            group.shutdownGracefully(0, 5, TimeUnit.SECONDS);
+        }
+    }
+
+    private class SocketIoLoadClientHandler extends SimpleChannelInboundHandler<WebSocketFrame> {
+        private final int clientIndex;
+        private final String room;
+        private final AtomicBoolean namespaceConnected = new AtomicBoolean(false);
+
+        private SocketIoLoadClientHandler(int clientIndex, String room) {
+            this.clientIndex = clientIndex;
+            this.room = room;
+        }
+
+        @Override
+        public void userEventTriggered(ChannelHandlerContext ctx, Object evt) throws Exception {
+            if (evt == WebSocketClientProtocolHandler.ClientHandshakeStateEvent.HANDSHAKE_COMPLETE) {
+                ctx.writeAndFlush(new TextWebSocketFrame("40"));
+            } else {
+                super.userEventTriggered(ctx, evt);
+            }
+        }
+
+        @Override
+        protected void channelRead0(ChannelHandlerContext ctx, WebSocketFrame frame) {
+            if (!(frame instanceof TextWebSocketFrame)) {
+                return;
+            }
+
+            String text = ((TextWebSocketFrame) frame).text();
+            if ("2".equals(text)) {
+                ctx.writeAndFlush(new TextWebSocketFrame("3"));
+                return;
+            }
+            if (text.startsWith("40") && namespaceConnected.compareAndSet(false, true)) {
+                int count = connectedCount.incrementAndGet();
+                logProgress("Connected clients", count);
+                connectLatch.countDown();
+                if (mode == SmokeTestMode.DISTRIBUTED) {
+                    ctx.writeAndFlush(new TextWebSocketFrame(socketIoEvent("join-room", room)));
+                }
+                return;
+            }
+            if (text.startsWith("42[\"join-ok\"")) {
+                int count = joinedCount.incrementAndGet();
+                logProgress("Joined clients", count);
+                joinLatch.countDown();
+                return;
+            }
+            if (text.startsWith("42[\"echo-response\"") || text.startsWith("42[\"relay-response\"")) {
+                String data = extractSecondString(text);
+                if (data == null) {
+                    metrics.recordError();
+                } else {
+                    recordResponse(data);
+                }
+            }
+        }
+
+        @Override
+        public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) {
+            if (!(cause instanceof WebSocketClientHandshakeException)) {
+                log.debug("Client {} channel error", clientIndex, cause);
+            }
+            metrics.recordError();
+            ctx.close();
+        }
+
+        private String extractSecondString(String text) {
+            int firstComma = text.indexOf(',');
+            if (firstComma < 0) {
+                return null;
+            }
+            int start = text.indexOf('"', firstComma);
+            int end = text.indexOf('"', start + 1);
+            if (start < 0 || end < 0) {
+                return null;
+            }
+            return text.substring(start + 1, end);
         }
     }
 }

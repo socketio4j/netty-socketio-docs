@@ -28,6 +28,7 @@
     <javafaker.version>1.0.2</javafaker.version>
     <jackson.version>2.20.1</jackson.version>
     <awaitility.version>4.3.0</awaitility.version>
+    <redisson.version>4.1.0</redisson.version>
   </properties>
 
   <dependencies>
@@ -55,6 +56,12 @@
       <groupId>io.socket</groupId>
       <artifactId>socket.io-client</artifactId>
       <version>${socketio-client.version}</version>
+    </dependency>
+
+    <dependency>
+      <groupId>org.redisson</groupId>
+      <artifactId>redisson</artifactId>
+      <version>${redisson.version}</version>
     </dependency>
     
     <dependency>
