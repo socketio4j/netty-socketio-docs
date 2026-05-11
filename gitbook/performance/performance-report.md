@@ -4,6 +4,14 @@ This report contains smoke-test results with Socket.IO servers running in separa
 
 ## Latest Result Charts
 
+### 2026-05-11 07:26:28 distributed
+
+![2026-05-11 07:26:28 distributed memory chart](../../smoke-test/performance-results/performance-result-distributed-25_0_2-20260511-072628-memory-chart.png)
+
+### 2026-05-11 06:15:34 standalone
+
+![2026-05-11 06:15:34 standalone memory chart](../../smoke-test/performance-results/performance-result-standalone-25_0_2-20260511-061534-memory-chart.png)
+
 ### 2026-05-11 02:42:14 distributed
 
 ![2026-05-11 02:42:14 distributed memory chart](../../smoke-test/performance-results/performance-result-distributed-25_0_2-20260511-024214-memory-chart.png)
@@ -12,18 +20,12 @@ This report contains smoke-test results with Socket.IO servers running in separa
 
 ![2026-05-10 13:07:23 standalone memory chart](../../smoke-test/performance-results/performance-result-standalone-25_0_2-20260510-130723-memory-chart.png)
 
-### 2026-04-24 11:28:35 standalone
-
-![2026-04-24 11:28:35 standalone memory chart](../../smoke-test/performance-results/performance-result-25_0_2-20260424-112835-memory-chart.png)
-
-### 2026-04-24 11:23:14 standalone
-
-![2026-04-24 11:23:14 standalone memory chart](../../smoke-test/performance-results/performance-result-21_0_10-20260424-112314-memory-chart.png)
-
 ## Historical Results
 
 | Date | Mode | Clients | Msg/Client | Messages/sec | Avg Latency (ms) | P99 Latency (ms) | Error Rate (%) | Loss Rate (%) | Server Heap Peak MB | Server Post-GC Delta MB | Chart | Memory CSV | Version |
 |------|------|---------|------------|--------------|------------------|------------------|----------------|---------------|--------------------|-------------------------|-------|------------|---------|
+| 2026-05-11 07:26:28 | distributed | 10000 | 10000 | 8,571.24 | 672.94 | 775 | 0.0000 | 0.0000 | 2998 | 102 | [png](../../smoke-test/performance-results/performance-result-distributed-25_0_2-20260511-072628-memory-chart.png) | [csv](../../smoke-test/performance-results/performance-result-distributed-25_0_2-20260511-072628-memory.csv) | 4.0.0 |
+| 2026-05-11 06:15:34 | standalone | 10000 | 10000 | 9,999.69 | 66.21 | 116 | 0.0000 | 0.0000 | 3414 | 37 | [png](../../smoke-test/performance-results/performance-result-standalone-25_0_2-20260511-061534-memory-chart.png) | [csv](../../smoke-test/performance-results/performance-result-standalone-25_0_2-20260511-061534-memory.csv) | 4.0.0 |
 | 2026-05-11 02:42:14 | distributed | 10000 | 10000 | 7,499.86 | 868.68 | 8831 | 0.0000 | 0.0000 | 2746 | 107 | [png](../../smoke-test/performance-results/performance-result-distributed-25_0_2-20260511-024214-memory-chart.png) | [csv](../../smoke-test/performance-results/performance-result-distributed-25_0_2-20260511-024214-memory.csv) | 4.0.0-beta |
 | 2026-05-10 13:07:23 | standalone | 10000 | 10000 | 9,999.38 | 73.96 | 124 | 0.0000 | 0.0000 | 967 | 72 | [png](../../smoke-test/performance-results/performance-result-standalone-25_0_2-20260510-130723-memory-chart.png) | [csv](../../smoke-test/performance-results/performance-result-standalone-25_0_2-20260510-130723-memory.csv) | 4.0.0-beta |
 | 2026-04-24 11:28:35 | standalone | 10 | 50000 | 197,706.60 | 1443.48 | 2039 | 0.0000 | 0.0000 | 256 | 0 | [png](../../smoke-test/performance-results/performance-result-25_0_2-20260424-112835-memory-chart.png) |  | 4.0.0-alpha |
