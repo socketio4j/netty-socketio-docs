@@ -15,7 +15,7 @@ This smoke test project is independent from the main Netty-SocketIO project and 
 
 ### Quick Start
 
-Run the test with default parameters (version 4.0.0-SNAPSHOT):
+Run the test with default parameters (current GA on Maven Central, **4.0.0**):
 
 ```bash
 ./run-test.sh
@@ -23,10 +23,10 @@ Run the test with default parameters (version 4.0.0-SNAPSHOT):
 
 ### Specify Version
 
-Test a specific version:
+Test a specific version (must resolve from Maven Central unless you add snapshot repositories / local `mvn install`):
 
 ```bash
-./run-test.sh 4.0.0-SNAPSHOT
+./run-test.sh 4.0.0
 ```
 
 ### Custom Test Parameters
@@ -37,13 +37,13 @@ Test a specific version:
 
 Example:
 ```bash
-./run-test.sh 4.0.0-SNAPSHOT 8899 10 50000 32 standalone
-./run-test.sh 4.0.0-SNAPSHOT 8899 10 50000 32 distributed redis://127.0.0.1:6379
-TEST_DURATION_SECONDS=60 CLIENT_ROUNDS_PER_SECOND=1 SERVER_JVM_OPTS="-Xms1g -Xmx4g -XX:+UseG1GC -XX:+AlwaysPreTouch" ./run-test.sh 4.0.0-SNAPSHOT 8899 10000 0 32 standalone
+./run-test.sh 4.0.0 8899 10 50000 32 standalone
+./run-test.sh 4.0.0 8899 10 50000 32 distributed redis://127.0.0.1:6379
+TEST_DURATION_SECONDS=60 CLIENT_ROUNDS_PER_SECOND=1 SERVER_JVM_OPTS="-Xms1g -Xmx4g -XX:+UseG1GC -XX:+AlwaysPreTouch" ./run-test.sh 4.0.0 8899 10000 0 32 standalone
 ```
 
 Parameters:
-- `version`: Netty-SocketIO version to test (default: 4.0.0-SNAPSHOT)
+- `version`: Netty-SocketIO version to test (default: **4.0.0**)
 - `port`: Server port (default: 8899)
 - `clientCount`: Number of concurrent clients (default: 10)
 - `eachMsgCount`: Messages per client (default: 10000). Set it to `0` when using duration mode.
@@ -61,11 +61,11 @@ If you prefer to run manually:
 
 ```bash
 # Build with specific version
-mvn clean package -Dnetty.socketio.version=4.0.0-SNAPSHOT
+mvn clean package -Dnetty.socketio.version=4.0.0
 
 # Run the test
 java -Xms128m -Xmx256m -XX:+UseG1GC \
-     -Dnetty.socketio.version=4.0.0-SNAPSHOT \
+     -Dnetty.socketio.version=4.0.0 \
      -Dsmoke.server.jvm.args="-Xms256m -Xmx256m -XX:+UseG1GC -XX:+AlwaysPreTouch" \
      -Dsmoke.memory.sample.ms=1000 \
      -Dsmoke.test.duration.seconds=0 \
@@ -88,7 +88,7 @@ You can also trigger the smoke test via GitHub Actions workflow:
 2. Select **Smoke Test** workflow
 3. Click **Run workflow**
 4. Fill in the parameters:
-   - **Netty-SocketIO version**: The version to test (e.g., 4.0.0-SNAPSHOT)
+   - **Netty-SocketIO version**: The version to test (e.g., `4.0.0`, `3.0.1`, or a pre-release / snapshot coordinate you can resolve)
    - **JDK version**: Java version to use (8, 11, 17, 21, or 25)
    - **Port**: Server port (default: 8899)
    - **Client count**: Number of concurrent clients (default: 10)
@@ -116,7 +116,7 @@ Edit `pom.xml` and change the `netty.socketio.version` property:
 
 ```xml
 <properties>
-    <netty.socketio.version>4.0.0-SNAPSHOT</netty.socketio.version>
+    <netty.socketio.version>4.0.0</netty.socketio.version>
 </properties>
 ```
 
@@ -154,4 +154,5 @@ The test automatically detects the Netty-SocketIO version being tested by:
 - The test reads all historical JSON files from the local directory to generate the complete report
 - The test uses Maven Central releases, not local builds
 - Make sure the specified version exists in Maven Central before running
+- To exercise an unreleased **`-SNAPSHOT`**, you must be able to resolve it (for example Sonatype snapshot repository and/or `mvn install` from the main library project); pass that version as the first argument to `./run-test.sh`
 

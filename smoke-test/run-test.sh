@@ -5,15 +5,15 @@
 # Usage: ./run-test.sh [version] [port] [clientCount] [eachMsgCount] [eachMsgSize] [standalone|distributed] [redisUrl]
 #
 # Example:
-#   ./run-test.sh 4.0.0-SNAPSHOT                    # Use default test parameters
-#   ./run-test.sh 4.0.0-SNAPSHOT 8899 10 10000 32 standalone
-#   ./run-test.sh 4.0.0-SNAPSHOT 8899 10 10000 32 distributed redis://127.0.0.1:6379
-#   TEST_DURATION_SECONDS=60 CLIENT_ROUNDS_PER_SECOND=1 SERVER_JVM_OPTS="-Xms1g -Xmx4g -XX:+UseG1GC" ./run-test.sh 4.0.0-SNAPSHOT 8899 10000 0 32 standalone
+#   ./run-test.sh 4.0.0                           # Use default test parameters (GA on Central)
+#   ./run-test.sh 4.0.0 8899 10 10000 32 standalone
+#   ./run-test.sh 4.0.0 8899 10 10000 32 distributed redis://127.0.0.1:6379
+#   TEST_DURATION_SECONDS=60 CLIENT_ROUNDS_PER_SECOND=1 SERVER_JVM_OPTS="-Xms1g -Xmx4g -XX:+UseG1GC" ./run-test.sh 4.0.0 8899 10000 0 32 standalone
 
 set -e
 
 # Default values
-DEFAULT_VERSION="4.0.0-SNAPSHOT"
+DEFAULT_VERSION="4.0.0"
 DEFAULT_PORT=8899
 DEFAULT_CLIENT_COUNT=10
 DEFAULT_EACH_MSG_COUNT=10000

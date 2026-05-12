@@ -7,13 +7,15 @@ icon: play
 ## Version
 
 * 5.0 - Planned & Experimental Phase
-* 4.0 - New API & Adapters - In Active Development & Support
-  * 4.0.0-SNAPSHOT - Upcoming LTS
+* 4.0 - New API & Adapters - **LTS** (4.0.x)
+  * **4.0.0** - Current GA / LTS baseline on Maven Central
 * 3.0 - Maintenance of parent fork
   * 3.0.1 - Stable - Compatiable with parent fork
 
 {% hint style="info" %}
 ## Please check version policy for more [version-policy.md](version-policy.md "mention")
+
+To show **4.0.0** in dependency snippets on the live site, set GitBook space variables as in [gitbook-space-variables.md](gitbook-space-variables.md "mention").
 {% endhint %}
 
 > New project or new to socketio4j? Use the latest LTS (4.0.x+).

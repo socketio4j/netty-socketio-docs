@@ -52,7 +52,7 @@ Incremented when:
 3.y.z
 ```
 
-#### **4.x – LTS Line (Upcoming)**
+#### **4.x – LTS Line**
 
 * Introduces new APIs and extended functionality
 * Includes architectural and performance improvements
@@ -60,12 +60,12 @@ Incremented when:
 * Backward compatibility maintained within the 4.x line
 
 > **Current status:**\
-> `4.0.0` is currently in **SNAPSHOT** and under active development.\
-> Once released as GA, **4.x will become the Long-Term Support (LTS) line**.
+> **4.0.0** is **GA** on Maven Central and is the **LTS baseline** for the 4.x line.\
+> Day-to-day development may publish **`-SNAPSHOT`** or other pre-release builds; those are not the default for production or for published install snippets (see [gitbook-space-variables.md](gitbook-space-variables.md "mention") to align the docs site with GA).
 
 ```
-4.0.0-SNAPSHOT   ← Current
-4.y.z            ← Future LTS releases
+4.0.0            ← Current GA (LTS baseline)
+4.y.z            ← Future LTS releases (patches and minors)
 ```
 
 #### **5.x – Development Line (Planned)**
